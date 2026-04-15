@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Kalorify • Gemini, Groq & Manus</title>
+<title>Kalorify • Gemini, Groq & Mistral</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#07070F">
@@ -223,7 +223,6 @@ function applyTheme(opts) {
   document.documentElement.style.setProperty('--accent-glow', c.glow);
 }
 
-// Direktes Aktualisieren und dauerhaftes Speichern der Design-Einstellungen
 function updateAndSaveTheme() {
   const isLight = document.getElementById('prof-theme-toggle').checked;
   const isCompact = document.getElementById('prof-compact-toggle').checked;
@@ -284,7 +283,7 @@ function sumMeals(meals=[]){
 // ====================== AI ENGINE ======================
 function getAIProvider(){ return (S.profile && S.profile.aiProvider) || 'gemini'; }
 function getGroqKey(){ return load('groqApiKey') || ''; }
-function getManusKey(){ return load('manusApiKey') || ''; }
+function getMistralKey(){ return load('mistralApiKey') || ''; }
 
 function buildDayContext() {
   const log = S.todayLog;
@@ -300,7 +299,7 @@ function buildDayContext() {
 function buildCoachSystemPrompt() {
   const p = S.profile || {};
   const dayCtx = buildDayContext();
-  return `Du bist “Kalorify Coach” – ein intelligenter, motivierender deutscher Ernährungscoach.
+  return `Du bist "Kalorify Coach" – ein intelligenter, motivierender deutscher Ernährungscoach.
 
 NUTZERPROFIL:
 - Geschlecht: ${p.gender === 'male' ? 'Männlich' : 'Weiblich'}, Alter: ${p.age||'?'} Jahre
@@ -372,51 +371,51 @@ async function groqChatCall(userMessage, systemPrompt) {
   return await callGroq(messages);
 }
 
-// -- MANUS --
-async function callManus(messages) {
-  const key = getManusKey();
-  if (!key) throw new Error('Kein Manus API-Key. Bitte im Profil eintragen.');
-  const r = await fetch('https://api.manus.ai/v1/chat/completions', {
+// -- MISTRAL --
+async function callMistral(messages) {
+  const key = getMistralKey();
+  if (!key) throw new Error('Kein Mistral API-Key. Bitte im Profil eintragen.');
+  const r = await fetch('https://api.mistral.ai/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + key },
-    body: JSON.stringify({ model:'manus', messages, max_tokens:600, temperature:0.7 })
+    body: JSON.stringify({ model:'mistral-large-latest', messages, max_tokens:600, temperature:0.7 })
   });
   if (!r.ok) {
     let errText = ''; try { errText = await r.text(); } catch(e){}
-    throw new Error(r.status === 401 ? 'Manus: Ungültiger API-Key' : `Manus Fehler (${r.status})`);
+    throw new Error(r.status === 401 ? 'Mistral: Ungültiger API-Key' : `Mistral Fehler (${r.status})`);
   }
   const data = await r.json();
   return data.choices?.[0]?.message?.content || '';
 }
 
-async function manusChatCall(userMessage, systemPrompt) {
+async function mistralChatCall(userMessage, systemPrompt) {
   const history = S.chatHistory || [];
   const messages = [{ role:'system', content: systemPrompt }];
   history.forEach(msg => messages.push({ role: msg.role==='user'?'user':'assistant', content: msg.text }));
   messages.push({ role:'user', content: userMessage });
-  return await callManus(messages);
+  return await callMistral(messages);
 }
 
 async function coachChat(userMessage) {
   const provider = getAIProvider();
   const sysPrompt = buildCoachSystemPrompt();
 
-  if (provider === 'gemini') return await geminiChatCall(userMessage, sysPrompt);
-  if (provider === 'groq')   return await groqChatCall(userMessage, sysPrompt);
-  if (provider === 'manus')  return await manusChatCall(userMessage, sysPrompt);
+  if (provider === 'gemini')  return await geminiChatCall(userMessage, sysPrompt);
+  if (provider === 'groq')    return await groqChatCall(userMessage, sysPrompt);
+  if (provider === 'mistral') return await mistralChatCall(userMessage, sysPrompt);
 
   // Kombination aller 3 Anbieter
   const [gRes, rRes, mRes] = await Promise.allSettled([
     geminiChatCall(userMessage, sysPrompt),
     groqChatCall(userMessage, sysPrompt),
-    manusChatCall(userMessage, sysPrompt)
+    mistralChatCall(userMessage, sysPrompt)
   ]);
-  
+
   const gText = gRes.status === 'fulfilled' ? gRes.value : `*(Fehler: ${gRes.reason.message})*`;
   const rText = rRes.status === 'fulfilled' ? rRes.value : `*(Fehler: ${rRes.reason.message})*`;
   const mText = mRes.status === 'fulfilled' ? mRes.value : `*(Fehler: ${mRes.reason.message})*`;
-  
-  return `**✨ Gemini:**\n${gText}\n\n**⚡ Groq (Llama):**\n${rText}\n\n**🧠 Manus:**\n${mText}`;
+
+  return `**✨ Gemini:**\n${gText}\n\n**⚡ Groq (Llama):**\n${rText}\n\n**🌟 Mistral:**\n${mText}`;
 }
 
 async function geminiAnalyze(text, b64img) {
@@ -492,7 +491,7 @@ const DE_EN = {
   'putenbrust':'turkey breast','speck':'bacon','wurst':'sausage',
   'schinken':'ham','salami':'salami','leberwurst':'liverwurst',
   'pizza':'pizza','burger':'burger','sandwich':'sandwich','wrap':'wrap',
-  'suppe':'soup','salat':'salad','müslibar':'granola bar',
+  'suppe':'soup','müslibar':'granola bar',
   'nuss':'nut','nüsse':'nuts'
 };
 function translateQuery(q) {
@@ -761,7 +760,6 @@ function renderView(v){
 function calcStreak() {
   let streak = 0;
   const d = new Date();
-  // Don't count today unless there are meals
   const todayLog = load('log-' + today());
   if (todayLog && todayLog.meals && todayLog.meals.length > 0) streak = 1;
   for (let i = 1; i <= 365; i++) {
@@ -810,14 +808,12 @@ function renderDashboard(el){
   const lastWeight = wLog.length ? wLog[wLog.length-1].kg : (S.profile?.weight || '–');
   const todayHasWeight = wLog.length && wLog[wLog.length-1].date === today();
 
-  // Donut chart
   const r = 54, cx = 70, cy = 70, stroke = 12;
   const circ = 2 * Math.PI * r;
   const filled = Math.min(1, totals.calories / (targets.calories || 1));
   const dashArr = `${(filled * circ).toFixed(1)} ${circ.toFixed(1)}`;
   const donutColor = isOver ? 'var(--fat)' : 'var(--accent)';
 
-  // Weekly bar chart
   const weekDays = getWeeklyCalories();
   const maxCal = Math.max(...weekDays.map(d => d.cal), targets.calories * 0.3, 500);
   const weekBarsHTML = weekDays.map(d => {
@@ -833,7 +829,6 @@ function renderDashboard(el){
     </div>`;
   }).join('');
 
-  // Grouped meals
   const groupedMeals = {};
   MEAL_TYPES.forEach(t => { groupedMeals[t.id] = []; });
   log.meals.forEach(m => { const t = m.mealType || 'snack'; (groupedMeals[t] = groupedMeals[t] || []).push(m); });
@@ -1053,7 +1048,7 @@ function switchHistoryTab(tab){
 // ====================== CHAT ======================
 function renderChat(el){
   const aiProv = getAIProvider();
-  const AI_LABELS = {'gemini':'✨ Gemini','groq':'⚡ Groq (Llama)','manus':'🧠 Manus AI','both':'✨⚡🧠 Alle'};
+  const AI_LABELS = {'gemini':'✨ Gemini','groq':'⚡ Groq (Llama)','mistral':'🌟 Mistral AI','both':'✨⚡🌟 Alle'};
   const aiLabel = AI_LABELS[aiProv] || 'KI Coach';
   const log = S.todayLog;
   const totals = sumMeals(log.meals);
@@ -1133,10 +1128,10 @@ const DB_SOURCES = [
   { id:'fs',   label:'🟠 FatSecret',       desc:'Internationale DB, braucht kostenfreien API-Key' },
 ];
 const AI_PROVIDERS = [
-  { id:'gemini', label:'✨ Google Gemini', desc:'Gemini 2.5 Flash – benötigt Google AI Studio Key' },
-  { id:'groq',   label:'⚡ Groq (Llama)',  desc:'Llama 3.3 70B – kostenlos, sehr schnell' },
-  { id:'manus',  label:'🧠 Manus AI',      desc:'Manus KI – benötigt API-Key' },
-  { id:'both',   label:'✨⚡🧠 Alle 3 kombiniert', desc:'Gemini + Groq + Manus antworten' },
+  { id:'gemini',  label:'✨ Google Gemini', desc:'Gemini 2.5 Flash – benötigt Google AI Studio Key' },
+  { id:'groq',    label:'⚡ Groq (Llama)',  desc:'Llama 3.3 70B – kostenlos, sehr schnell' },
+  { id:'mistral', label:'🌟 Mistral AI',    desc:'Mistral Large – benötigt Mistral API Key (console.mistral.ai)' },
+  { id:'both',    label:'✨⚡🌟 Alle 3 kombiniert', desc:'Gemini + Groq + Mistral antworten' },
 ];
 
 function _radioRow(id, selected, onclick, label, desc) {
@@ -1157,7 +1152,7 @@ function renderProfile(el){
   const acc = p.accentColor || 'lime';
   const dbSrc  = p.dbSource   || 'both';
   const aiProv = p.aiProvider || 'gemini';
-  
+
   el.innerHTML = `
 <div style="padding:20px 16px">
 <h1 style="font-family:'Syne',sans-serif;margin-bottom:20px">Einstellungen</h1>
@@ -1226,9 +1221,9 @@ function renderProfile(el){
       <button onclick="saveGroqKey()" class="btn btn-ghost" style="width:100%;margin-top:8px">Groq Key speichern</button>
     </div>
     <div style="padding-top:12px;border-top:1px solid var(--border)">
-      <label style="font-size:13px;color:var(--muted);display:block;margin-bottom:4px">🧠 Manus Key <span style="font-size:11px">(manus.ai)</span></label>
-      <input class="inp" id="manus-key-inp" type="password" value="${getManusKey()}" placeholder="sk-...">
-      <button onclick="saveManusKey()" class="btn btn-ghost" style="width:100%;margin-top:8px">Manus Key speichern</button>
+      <label style="font-size:13px;color:var(--muted);display:block;margin-bottom:4px">🌟 Mistral Key <span style="font-size:11px">(console.mistral.ai)</span></label>
+      <input class="inp" id="mistral-key-inp" type="password" value="${getMistralKey()}" placeholder="sk-...">
+      <button onclick="saveMistralKey()" class="btn btn-ghost" style="width:100%;margin-top:8px">Mistral Key speichern</button>
     </div>
   </div>
 
@@ -1282,9 +1277,9 @@ function saveGroqKey(){
   const k = document.getElementById('groq-key-inp')?.value.trim();
   if(k){ store('groqApiKey', k); showToast('Groq Key gespeichert ✓'); }
 }
-function saveManusKey(){
-  const k = document.getElementById('manus-key-inp')?.value.trim();
-  if(k){ store('manusApiKey', k); showToast('Manus Key gespeichert ✓'); }
+function saveMistralKey(){
+  const k = document.getElementById('mistral-key-inp')?.value.trim();
+  if(k){ store('mistralApiKey', k); showToast('Mistral Key gespeichert ✓'); }
 }
 function saveUSDAKey(){
   const k = document.getElementById('usda-key-inp')?.value.trim();
@@ -1310,16 +1305,14 @@ function saveProfileData(){
   profile.height = parseInt(document.getElementById('prof-height').value);
   profile.activityLevel = document.getElementById('prof-activity').value;
   profile.goal = document.getElementById('prof-goal').value;
-  
-  // Design Data manuell noch mal mit abspeichern, falls der Nutzer
-  // auf den großen "Profil speichern" Button drückt
+
   const isLight = document.getElementById('prof-theme-toggle').checked;
   const isCompact = document.getElementById('prof-compact-toggle').checked;
   const color = document.getElementById('prof-color').value;
   profile.theme = isLight ? 'light' : 'dark';
   profile.compactMode = isCompact;
   profile.accentColor = color;
-  
+
   S.saveProfile(profile);
   applyTheme(profile);
   showToast('Profil & Design gespeichert ✓');
@@ -1899,8 +1892,7 @@ function boot(){
   }
   const savedChat = load('chatHistory');
   if(savedChat) S.chatHistory = savedChat;
-  
-  // Registrierung des Service Workers für die PWA
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js')
@@ -1908,7 +1900,7 @@ function boot(){
         .catch((error) => console.log('ServiceWorker Registrierung fehlgeschlagen:', error));
     });
   }
-  
+
   console.log('%c✅ Kalorify vollständig geladen!', 'color:#AADF3C;font-weight:700');
 }
 boot();
