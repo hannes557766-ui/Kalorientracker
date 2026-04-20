@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -579,9 +576,174 @@ function sumMeals(meals=[]){
 }
 
 // ====================== AI ENGINE (INKL. AUTOTRACKING) ======================
-function getAIProvider(){ return (S.profile && S.profile.aiProvider) || 'gemini'; }
+// Provider-Priorität: Claude → Groq → Gemini → Mistral → Lokal-Fallback
+function getAIProvider(){ return (S.profile && S.profile.aiProvider) || 'claude'; }
+function getClaudeKey(){ return load('claudeApiKey') || ''; }
 function getGroqKey(){ return load('groqApiKey') || ''; }
 function getMistralKey(){ return load('mistralApiKey') || ''; }
+
+// ====================== LOKALE NÄHRWERT-DATENBANK (kein API-Key nötig) ======================
+const LOCAL_FOODS = {
+  // Grundnahrungsmittel
+  'reis': {name:'Reis (gekocht)', calories:130, protein:2.7, carbs:28, fat:0.3},
+  'vollkornreis': {name:'Vollkornreis (gekocht)', calories:112, protein:2.6, carbs:23, fat:0.9},
+  'nudeln': {name:'Nudeln (gekocht)', calories:157, protein:5.8, carbs:30, fat:0.9},
+  'vollkornnudeln': {name:'Vollkornnudeln (gekocht)', calories:148, protein:5.5, carbs:28, fat:1.1},
+  'brot': {name:'Brot (Mischbrot)', calories:222, protein:7.2, carbs:43, fat:1.2},
+  'vollkornbrot': {name:'Vollkornbrot', calories:241, protein:8.5, carbs:43, fat:2.5},
+  'toast': {name:'Toast', calories:255, protein:8.0, carbs:48, fat:2.5},
+  'kartoffel': {name:'Kartoffel (gekocht)', calories:73, protein:2.0, carbs:16, fat:0.1},
+  'süßkartoffel': {name:'Süßkartoffel', calories:86, protein:1.6, carbs:20, fat:0.1},
+  'haferflocken': {name:'Haferflocken', calories:370, protein:13, carbs:59, fat:7},
+  'müsli': {name:'Müsli', calories:367, protein:9.8, carbs:60, fat:8.5},
+  // Proteine
+  'hähnchen': {name:'Hähnchenbrust (gebraten)', calories:165, protein:31, carbs:0, fat:3.6},
+  'hähnchenfilet': {name:'Hähnchenfilet (gebraten)', calories:165, protein:31, carbs:0, fat:3.6},
+  'thunfisch': {name:'Thunfisch (Dose, im Wasser)', calories:86, protein:19, carbs:0, fat:0.6},
+  'lachs': {name:'Lachs (gegart)', calories:208, protein:20, carbs:0, fat:13},
+  'rindfleisch': {name:'Rinderhackfleisch (mager)', calories:215, protein:21, carbs:0, fat:14},
+  'putenbrust': {name:'Putenbrust (gebraten)', calories:135, protein:29, carbs:0, fat:1.2},
+  'ei': {name:'Ei (groß, hartgekocht)', calories:78, protein:6.3, carbs:0.6, fat:5.3},
+  'eier': {name:'Eier (2 Stück)', calories:156, protein:12.6, carbs:1.2, fat:10.6},
+  'tofu': {name:'Tofu (fest)', calories:76, protein:8, carbs:1.9, fat:4.2},
+  'quark': {name:'Magerquark', calories:67, protein:12, carbs:4, fat:0.2},
+  'griechischer joghurt': {name:'Griechischer Joghurt (0%)', calories:59, protein:10, carbs:3.6, fat:0.4},
+  'joghurt': {name:'Joghurt (3,5%)', calories:62, protein:3.5, carbs:4.7, fat:3.5},
+  'milch': {name:'Vollmilch (3,5%)', calories:64, protein:3.4, carbs:4.8, fat:3.5},
+  'magerquark': {name:'Magerquark', calories:67, protein:12, carbs:4, fat:0.2},
+  'cottage cheese': {name:'Cottage Cheese', calories:98, protein:11, carbs:3.4, fat:4.3},
+  'käse': {name:'Gouda Käse', calories:356, protein:25, carbs:0.5, fat:28},
+  'mozzarella': {name:'Mozzarella', calories:280, protein:18, carbs:2.2, fat:22},
+  'hüttenkäse': {name:'Hüttenkäse', calories:98, protein:11, carbs:3.4, fat:4.3},
+  // Gemüse
+  'brokkoli': {name:'Brokkoli (gedämpft)', calories:35, protein:2.4, carbs:7, fat:0.4},
+  'spinat': {name:'Spinat (roh)', calories:23, protein:2.9, carbs:3.6, fat:0.4},
+  'tomate': {name:'Tomate', calories:18, protein:0.9, carbs:3.9, fat:0.2},
+  'tomaten': {name:'Tomaten', calories:18, protein:0.9, carbs:3.9, fat:0.2},
+  'gurke': {name:'Gurke', calories:15, protein:0.7, carbs:3.6, fat:0.1},
+  'paprika': {name:'Paprika (rot)', calories:31, protein:1, carbs:6, fat:0.3},
+  'karotte': {name:'Karotte', calories:41, protein:0.9, carbs:10, fat:0.2},
+  'karotten': {name:'Karotten', calories:41, protein:0.9, carbs:10, fat:0.2},
+  'zucchini': {name:'Zucchini', calories:17, protein:1.2, carbs:3.1, fat:0.3},
+  'blumenkohl': {name:'Blumenkohl', calories:25, protein:1.9, carbs:5, fat:0.3},
+  'salat': {name:'Gemischter Salat', calories:17, protein:1.3, carbs:3.2, fat:0.3},
+  'avocado': {name:'Avocado (½)', calories:160, protein:2, carbs:9, fat:15},
+  'mais': {name:'Mais (gekocht)', calories:96, protein:3.4, carbs:21, fat:1.5},
+  'erbsen': {name:'Grüne Erbsen (tiefgekühlt)', calories:80, protein:5.4, carbs:14, fat:0.4},
+  'kichererbsen': {name:'Kichererbsen (Dose)', calories:138, protein:7.3, carbs:23, fat:2},
+  'linsen': {name:'Rote Linsen (gekocht)', calories:116, protein:9, carbs:20, fat:0.4},
+  'bohnen': {name:'Schwarze Bohnen (Dose)', calories:132, protein:8.9, carbs:24, fat:0.5},
+  // Obst
+  'banane': {name:'Banane (mittel)', calories:89, protein:1.1, carbs:23, fat:0.3},
+  'apfel': {name:'Apfel (mittel)', calories:72, protein:0.4, carbs:19, fat:0.2},
+  'orange': {name:'Orange (mittel)', calories:62, protein:1.2, carbs:15, fat:0.2},
+  'erdbeeren': {name:'Erdbeeren (100g)', calories:32, protein:0.7, carbs:7.7, fat:0.3},
+  'blaubeeren': {name:'Blaubeeren (100g)', calories:57, protein:0.7, carbs:14, fat:0.3},
+  'heidelbeeren': {name:'Heidelbeeren (100g)', calories:57, protein:0.7, carbs:14, fat:0.3},
+  'trauben': {name:'Weintrauben (100g)', calories:69, protein:0.7, carbs:18, fat:0.2},
+  'mango': {name:'Mango (100g)', calories:60, protein:0.8, carbs:15, fat:0.4},
+  'ananas': {name:'Ananas (100g)', calories:50, protein:0.5, carbs:13, fat:0.1},
+  'wassermelone': {name:'Wassermelone (100g)', calories:30, protein:0.6, carbs:7.6, fat:0.2},
+  'kiwi': {name:'Kiwi (mittel)', calories:42, protein:0.8, carbs:10, fat:0.4},
+  'birne': {name:'Birne (mittel)', calories:57, protein:0.4, carbs:15, fat:0.1},
+  // Fette & Nüsse
+  'olivenöl': {name:'Olivenöl (1 EL)', calories:120, protein:0, carbs:0, fat:14},
+  'erdnussbutter': {name:'Erdnussbutter (2 EL)', calories:188, protein:8, carbs:6, fat:16},
+  'mandeln': {name:'Mandeln (30g)', calories:173, protein:6.3, carbs:6, fat:15},
+  'walnüsse': {name:'Walnüsse (30g)', calories:196, protein:4.6, carbs:3.9, fat:19},
+  'cashews': {name:'Cashews (30g)', calories:163, protein:4.3, carbs:8.6, fat:13},
+  'erdnüsse': {name:'Erdnüsse (30g)', calories:176, protein:7.5, carbs:6, fat:15},
+  // Fast Food & Fertiggerichte
+  'pizza': {name:'Pizza Margherita (1 Stück)', calories:266, protein:11, carbs:33, fat:10},
+  'burger': {name:'Hamburger', calories:354, protein:17, carbs:40, fat:14},
+  'pommes': {name:'Pommes Frites (mittel)', calories:365, protein:4.5, carbs:48, fat:17},
+  'kebab': {name:'Döner Kebab', calories:570, protein:33, carbs:58, fat:22},
+  'sandwich': {name:'Sandwich (mit Schinken)', calories:310, protein:17, carbs:38, fat:9},
+  'wrap': {name:'Chicken Wrap', calories:340, protein:22, carbs:38, fat:12},
+  'sushi': {name:'Sushi (8 Stück)', calories:330, protein:14, carbs:58, fat:5},
+  // Süßes & Snacks
+  'schokolade': {name:'Zartbitterschokolade (30g)', calories:170, protein:2.1, carbs:18, fat:11},
+  'müsliriegel': {name:'Müsliriegel', calories:195, protein:3.5, carbs:30, fat:7.5},
+  'chips': {name:'Kartoffelchips (30g)', calories:160, protein:2, carbs:15, fat:10},
+  'gummibären': {name:'Gummibären (100g)', calories:343, protein:6.9, carbs:77, fat:0.5},
+  'eis': {name:'Vanilleeis (1 Kugel)', calories:137, protein:2.4, carbs:19, fat:7},
+  'kuchen': {name:'Käsekuchen (1 Stück)', calories:321, protein:6.1, carbs:28, fat:21},
+  'croissant': {name:'Croissant', calories:406, protein:8, carbs:45, fat:21},
+  'brötchen': {name:'Brötchen', calories:271, protein:9, carbs:56, fat:1.5},
+  // Getränke
+  'kaffee': {name:'Kaffee (schwarz)', calories:2, protein:0.3, carbs:0, fat:0},
+  'cappuccino': {name:'Cappuccino', calories:74, protein:4, carbs:7.5, fat:2.6},
+  'latte macchiato': {name:'Latte Macchiato', calories:130, protein:6.5, carbs:13, fat:5},
+  'orangensaft': {name:'Orangensaft (200ml)', calories:88, protein:1.4, carbs:21, fat:0.4},
+  'cola': {name:'Cola (330ml)', calories:139, protein:0, carbs:35, fat:0},
+  'bier': {name:'Bier (0,5L)', calories:215, protein:1.5, carbs:17, fat:0},
+  'wein': {name:'Wein (Glas, 200ml)', calories:168, protein:0.2, carbs:5.4, fat:0},
+  // Sport & Supplements
+  'proteinshake': {name:'Protein Shake (30g Pulver)', calories:120, protein:24, carbs:3, fat:1.5},
+  'proteinpulver': {name:'Whey Protein (30g)', calories:120, protein:24, carbs:3, fat:1.5},
+  'creatin': {name:'Creatin (5g)', calories:0, protein:0, carbs:0, fat:0},
+  // Typische Mahlzeiten
+  'rührei': {name:'Rührei (2 Eier, Butter)', calories:210, protein:12.7, carbs:1.5, fat:17},
+  'spiegelei': {name:'Spiegelei (2 Eier)', calories:186, protein:12, carbs:0.7, fat:15},
+  'pfannkuchen': {name:'Pfannkuchen (2 Stück)', calories:380, protein:10, carbs:48, fat:16},
+  'granola': {name:'Granola (60g)', calories:264, protein:5.5, carbs:42, fat:8},
+  'acai bowl': {name:'Acai Bowl', calories:280, protein:5, carbs:52, fat:9},
+  'smoothie': {name:'Smoothie (grün, 400ml)', calories:180, protein:4, carbs:38, fat:2},
+  'bowl': {name:'Buddha Bowl', calories:420, protein:18, carbs:52, fat:15},
+  'steak': {name:'Rindersteak (200g)', calories:342, protein:42, carbs:0, fat:18},
+  'schnitzel': {name:'Wiener Schnitzel', calories:450, protein:28, carbs:28, fat:25},
+  'pasta': {name:'Pasta mit Tomatensoße', calories:380, protein:13, carbs:68, fat:6},
+  'risotto': {name:'Gemüserisotto', calories:330, protein:7, carbs:58, fat:8},
+  'suppe': {name:'Gemüsesuppe', calories:65, protein:2.3, carbs:12, fat:1.2},
+  'chili': {name:'Chili con Carne', calories:320, protein:22, carbs:32, fat:11},
+  'curry': {name:'Hähnchencurry', calories:295, protein:26, carbs:22, fat:11},
+  'stir fry': {name:'Gemüse Pfanne', calories:220, protein:12, carbs:28, fat:7},
+  'oatmeal': {name:'Porridge (mit Wasser)', calories:166, protein:6, carbs:28, fat:3.5},
+  'porridge': {name:'Porridge (mit Milch)', calories:230, protein:8, carbs:35, fat:7},
+};
+
+function localFoodAnalyze(input) {
+  // Normalisieren: lowercase, trim
+  const lower = input.toLowerCase().trim();
+
+  // 1. Direkter Match
+  if (LOCAL_FOODS[lower]) return LOCAL_FOODS[lower];
+
+  // 2. Teilstring-Match: Suche nach Schlüssel der im Input vorkommt
+  let bestMatch = null;
+  let bestLen = 0;
+  for (const key of Object.keys(LOCAL_FOODS)) {
+    if (lower.includes(key) && key.length > bestLen) {
+      bestMatch = key;
+      bestLen = key.length;
+    }
+  }
+  if (bestMatch) return LOCAL_FOODS[bestMatch];
+
+  // 3. Gramm-Erkennung: "200g Hähnchen" → skaliere
+  const gramMatch = lower.match(/(\d+)\s*g\s+(.+)/);
+  if (gramMatch) {
+    const grams = parseInt(gramMatch[1]);
+    const foodName = gramMatch[2].trim();
+    const food = localFoodAnalyze(foodName);
+    if (food && food.calories > 0) {
+      const factor = grams / 100;
+      return {
+        name: `${food.name} (${grams}g)`,
+        calories: Math.round(food.calories * factor),
+        protein: Math.round(food.protein * factor * 10) / 10,
+        carbs: Math.round(food.carbs * factor * 10) / 10,
+        fat: Math.round(food.fat * factor * 10) / 10,
+      };
+    }
+  }
+
+  // 4. Mehrzahl-Vereinfachung: "äpfel" → "apfel"
+  const singular = lower.replace(/en$/, '').replace(/e$/, '').replace(/s$/, '');
+  if (singular !== lower && LOCAL_FOODS[singular]) return LOCAL_FOODS[singular];
+
+  return null;
+}
 
 function buildDayContext() {
   const log = S.dayLog;
@@ -641,6 +803,72 @@ WICHTIG - AUTOMATISCHES TRACKING:
 - Wenn der Nutzer dir eine sportliche Aktivität mitteilt, ERGÄNZE GANZ AM ENDE deiner Antwort exakt diesen Code-Block:[TRACK_ACTIVITY: {"name":"Sportart", "kcal":400}]`;
 }
 
+// -- CLAUDE (Anthropic) --
+async function callClaude(messages, systemPrompt, maxTokens = 800) {
+  const key = getClaudeKey();
+  if (!key) throw new Error('Kein Claude API-Key hinterlegt.');
+  const body = {
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: maxTokens,
+    system: systemPrompt || undefined,
+    messages
+  };
+  if (!systemPrompt) delete body.system;
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) {
+    let errText = ''; try { errText = await r.text(); } catch(e){}
+    if (r.status === 429) throw new Error('Claude: Rate-Limit – kurz warten');
+    if (r.status === 401) throw new Error('Claude: Ungültiger API-Key');
+    throw new Error(`Claude Fehler (${r.status})`);
+  }
+  const data = await r.json();
+  return (data.content?.[0]?.text || '').trim();
+}
+
+async function claudeChatCall(userMessage, systemPrompt) {
+  const history = getCurrentMessages() || [];
+  const messages = history.map(msg => ({
+    role: msg.role === 'user' ? 'user' : 'assistant',
+    content: msg.text
+  }));
+  messages.push({ role: 'user', content: userMessage });
+  return await callClaude(messages, systemPrompt, 800);
+}
+
+// -- GROQ --
+async function callGroq(messages) {
+  const key = getGroqKey();
+  if (!key) throw new Error('Kein Groq API-Key. Bitte im Profil eintragen.');
+  const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + key },
+    body: JSON.stringify({ model:'llama-3.3-70b-versatile', messages, max_tokens:600, temperature:0.7 })
+  });
+  if (!r.ok) {
+    let errText = ''; try { errText = await r.text(); } catch(e){}
+    throw new Error(r.status === 401 ? 'Groq: Ungültiger API-Key' : `Groq Fehler (${r.status})`);
+  }
+  const data = await r.json();
+  return data.choices?.[0]?.message?.content || '';
+}
+
+async function groqChatCall(userMessage, systemPrompt) {
+  const history = getCurrentMessages() || [];
+  const messages =[{ role:'system', content: systemPrompt }];
+  history.forEach(msg => messages.push({ role: msg.role==='user'?'user':'assistant', content: msg.text }));
+  messages.push({ role:'user', content: userMessage });
+  return await callGroq(messages);
+}
+
 // -- GEMINI --
 async function callGemini(contents) {
   const key = S.geminiKey;
@@ -669,31 +897,6 @@ async function geminiChatCall(userMessage, systemPrompt) {
   return await callGemini(contents);
 }
 
-// -- GROQ --
-async function callGroq(messages) {
-  const key = getGroqKey();
-  if (!key) throw new Error('Kein Groq API-Key. Bitte im Profil eintragen.');
-  const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + key },
-    body: JSON.stringify({ model:'llama-3.3-70b-versatile', messages, max_tokens:600, temperature:0.7 })
-  });
-  if (!r.ok) {
-    let errText = ''; try { errText = await r.text(); } catch(e){}
-    throw new Error(r.status === 401 ? 'Groq: Ungültiger API-Key' : `Groq Fehler (${r.status})`);
-  }
-  const data = await r.json();
-  return data.choices?.[0]?.message?.content || '';
-}
-
-async function groqChatCall(userMessage, systemPrompt) {
-  const history = getCurrentMessages() || [];
-  const messages =[{ role:'system', content: systemPrompt }];
-  history.forEach(msg => messages.push({ role: msg.role==='user'?'user':'assistant', content: msg.text }));
-  messages.push({ role:'user', content: userMessage });
-  return await callGroq(messages);
-}
-
 // -- MISTRAL --
 async function callMistral(messages) {
   const key = getMistralKey();
@@ -719,43 +922,137 @@ async function mistralChatCall(userMessage, systemPrompt) {
   return await callMistral(messages);
 }
 
+// -- LOKALER CHAT-FALLBACK (kein API-Key nötig) --
+function localCoachResponse(userMessage) {
+  const lower = userMessage.toLowerCase();
+  const log = S.dayLog;
+  const targets = getDynamicTargets(S.profile, log);
+  const totals = sumMeals(log.meals);
+  const remaining = targets.calories - totals.calories;
+  const p = S.profile || {};
+  
+  // Tracking erkennen
+  const trackKeywords = ['gegessen','getrunken','gefrühstückt','hatte','hatte ich','aß','hatte heute','tracking','track','eintragen','eingetragen','hinzufügen'];
+  const hasTracking = trackKeywords.some(k => lower.includes(k));
+  
+  let response = '';
+  
+  if (lower.includes('wie viel') && (lower.includes('noch') || lower.includes('übrig') || lower.includes('rest'))) {
+    response = `Du hast heute noch ${remaining > 0 ? remaining + ' kcal übrig' : Math.abs(remaining) + ' kcal über deinem Ziel'}. Protein: ${targets.protein - totals.protein}g übrig, Kohlenhydrate: ${targets.carbs - totals.carbs}g übrig. ${remaining > 300 ? '🍽️ Du könntest noch eine ausgewogene Mahlzeit einplanen.' : remaining > 0 ? '🎯 Nur noch ein kleiner Snack passt rein.' : '⚠️ Dein Kalorienziel ist überschritten – achte auf die nächsten Mahlzeiten.'}`;
+  } else if (lower.includes('wie viel') && lower.includes('protein')) {
+    response = `Du hast heute ${totals.protein}g Protein von deinen ${targets.protein}g Ziel erreicht. ${totals.protein >= targets.protein ? '💪 Super, Proteinziel erreicht!' : `Noch ${targets.protein - totals.protein}g fehlen – ein Proteinshake, Quark oder Hähnchen wäre ideal.`}`;
+  } else if (lower.includes('hallo') || lower.includes('hey') || lower.includes('hi ')) {
+    response = `Hallo! Ich bin dein Kalorify Coach 🍏. Ich arbeite gerade offline (kein API-Key nötig). Du hast heute ${totals.calories} von ${targets.calories} kcal. Wie kann ich dir helfen?`;
+  } else if (lower.includes('ziel') || lower.includes('kalorien')) {
+    response = `Dein heutiges Ziel: ${targets.calories} kcal. Bisher: ${totals.calories} kcal (${Math.round(totals.calories/targets.calories*100)}%). ${remaining > 0 ? `Noch ${remaining} kcal verfügbar.` : `${Math.abs(remaining)} kcal überschritten.`} Protein: ${totals.protein}/${targets.protein}g • KH: ${totals.carbs}/${targets.carbs}g • Fett: ${totals.fat}/${targets.fat}g`;
+  } else if (lower.includes('gut') || lower.includes('super') || lower.includes('danke')) {
+    response = `Sehr gerne! 💪 Dein Fortschritt heute: ${totals.calories} kcal von ${targets.calories} kcal. Weiter so – Beständigkeit ist der Schlüssel zum Erfolg!`;
+  } else if (lower.includes('abnehmen') || lower.includes('diät')) {
+    response = `Für dein Ziel ${p.goal === 'lose' ? '(Abnehmen)' : ''}: Halte dich an dein Tagesziel von ${targets.calories} kcal. Priorisiere Protein (${targets.protein}g) um Muskeln zu erhalten. ${totals.calories > targets.calories ? '⚠️ Heute bist du bereits über dem Ziel.' : '✅ Du bist heute noch im Rahmen – gut gemacht!'}`;
+  } else if (lower.includes('sport') || lower.includes('training') || lower.includes('workout')) {
+    response = `🏋️ Nach dem Training brauchst du vor allem Protein für die Regeneration! Ziel: ${targets.protein}g Protein heute. Gut geeignet: Hähnchen, Quark, Eier, Proteinshake. Möchtest du deine Aktivität mit "+ Sport (KI)" im Dashboard eintragen?`;
+  } else if (hasTracking) {
+    // Versuche Essen zu erkennen und zu tracken
+    const foodMatch = localFoodAnalyze(lower);
+    if (foodMatch) {
+      response = `Ich habe "${foodMatch.name}" erkannt: ${foodMatch.calories} kcal, P:${foodMatch.protein}g KH:${foodMatch.carbs}g F:${foodMatch.fat}g. Ich trage das für dich ein! ✓\n[TRACK_MEAL: {"name":"${foodMatch.name}", "kcal":${foodMatch.calories}, "p":${foodMatch.protein}, "c":${foodMatch.carbs}, "f":${foodMatch.fat}}]`;
+    } else {
+      response = `Ich konnte das Essen nicht automatisch erkennen. Nutze den "+ Button" und die "KI Foto" Funktion oder "Manuell" für den Eintrag. Alternativ hinterlege einen kostenlosen API-Key (Claude, Groq) für intelligentere Erkennung.`;
+    }
+  } else {
+    response = `Ich bin gerade im Offline-Modus (kein API-Key konfiguriert). Ich kann grundlegende Fragen zu deinen Makros beantworten. Für smarte Gespräche und automatisches Tracking empfehle ich einen kostenlosen Claude oder Groq API-Key im Profil zu hinterlegen.\n\n📊 Aktueller Stand: ${totals.calories}/${targets.calories} kcal • P:${totals.protein}/${targets.protein}g • KH:${totals.carbs}/${targets.carbs}g • F:${totals.fat}/${targets.fat}g`;
+  }
+  
+  return response;
+}
+
 async function coachChat(userMessage) {
   const provider = getAIProvider();
   const sysPrompt = buildCoachSystemPrompt();
+  const errors = [];
 
-  if (provider === 'gemini')  return await geminiChatCall(userMessage, sysPrompt);
-  if (provider === 'groq')    return await groqChatCall(userMessage, sysPrompt);
-  if (provider === 'mistral') return await mistralChatCall(userMessage, sysPrompt);
-
-  const[gRes, rRes, mRes] = await Promise.allSettled([
-    geminiChatCall(userMessage, sysPrompt),
-    groqChatCall(userMessage, sysPrompt),
-    mistralChatCall(userMessage, sysPrompt)
-  ]);
-
-  const gText = gRes.status === 'fulfilled' ? gRes.value : `*(Gemini Fehler: ${gRes.reason?.message || 'Unbekannt'})*`;
-  const rText = rRes.status === 'fulfilled' ? rRes.value : `*(Groq Fehler: ${rRes.reason?.message || 'Unbekannt'})*`;
-  const mText = mRes.status === 'fulfilled' ? mRes.value : `*(Mistral Fehler: ${mRes.reason?.message || 'Unbekannt'})*`;
-
-  let finalAnswer = `${gText}\n\n${rText}\n\n${mText}`;
-
-  if (getGroqKey()) {
-    try {
-      const combineMessages =[
-        { role: 'system', content: sysPrompt },
-        { role: 'user', content: `Kombiniere diese Antworten zu **einer einzigen** kohärenten Antwort. Erhalte zwingend alle [TRACK_MEAL...] oder [TRACK_ACTIVITY...] Blöcke falls vorhanden.\n\nGemini:\n${gText}\n\nGroq:\n${rText}\n\nMistral:\n${mText}` }
-      ];
-      finalAnswer = await callGroq(combineMessages);
-    } catch (combineErr) {
-      console.warn('Zusammenfassung mit Groq fehlgeschlagen', combineErr);
+  // Versuche API-Provider in Reihenfolge der Konfiguration
+  if (provider === 'claude') {
+    if (getClaudeKey()) {
+      try { return await claudeChatCall(userMessage, sysPrompt); }
+      catch(e) { errors.push('Claude: ' + e.message); }
+    }
+  } else if (provider === 'groq') {
+    if (getGroqKey()) {
+      try { return await groqChatCall(userMessage, sysPrompt); }
+      catch(e) { errors.push('Groq: ' + e.message); }
+    }
+  } else if (provider === 'gemini') {
+    if (S.geminiKey) {
+      try { return await geminiChatCall(userMessage, sysPrompt); }
+      catch(e) { errors.push('Gemini: ' + e.message); }
+    }
+  } else if (provider === 'mistral') {
+    if (getMistralKey()) {
+      try { return await mistralChatCall(userMessage, sysPrompt); }
+      catch(e) { errors.push('Mistral: ' + e.message); }
+    }
+  } else if (provider === 'auto') {
+    // Auto: Claude → Groq → Gemini → Mistral
+    if (getClaudeKey()) {
+      try { return await claudeChatCall(userMessage, sysPrompt); }
+      catch(e) { errors.push('Claude: ' + e.message); }
+    }
+    if (getGroqKey()) {
+      try { return await groqChatCall(userMessage, sysPrompt); }
+      catch(e) { errors.push('Groq: ' + e.message); }
+    }
+    if (S.geminiKey) {
+      try { return await geminiChatCall(userMessage, sysPrompt); }
+      catch(e) { errors.push('Gemini: ' + e.message); }
+    }
+    if (getMistralKey()) {
+      try { return await mistralChatCall(userMessage, sysPrompt); }
+      catch(e) { errors.push('Mistral: ' + e.message); }
     }
   }
 
-  return finalAnswer;
+  // Fallback: Wenn kein Provider klappt oder konfiguriert ist → lokal antworten
+  if (provider === 'local') return localCoachResponse(userMessage);
+  return localCoachResponse(userMessage);
 }
 
-async function geminiAnalyze(text, b64img) {
-  const parts =[];
+// -- ANALYSE FUNKTION (Foto/Text) --
+async function analyzeWithClaude(text, b64img) {
+  const key = getClaudeKey();
+  if (!key) throw new Error('no_claude_key');
+  const promptText = `Analysiere ${b64img ? 'das Bild (Teller, Packung oder Nährwerttabelle)' : 'die Mahlzeit/Zutaten: "' + (text || '') + '"'} und schätze die Nährwerte für 1 Portion. Antworte NUR mit gültigem JSON (keine Erklärung, kein Markdown):\n{"name":"Speisename","calories":0,"protein":0,"carbs":0,"fat":0}`;
+  
+  const content = [];
+  if (b64img) {
+    content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: b64img } });
+  }
+  content.push({ type: 'text', text: promptText });
+  
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 300,
+      messages: [{ role: 'user', content }]
+    })
+  });
+  if (!r.ok) throw new Error(`Claude Fehler (${r.status})`);
+  const data = await r.json();
+  const txt = (data.content?.[0]?.text || '').replace(/```json\n?|\n?```/g, '').trim();
+  const parsed = JSON.parse(txt);
+  if (!parsed.calories && parsed.calories !== 0) throw new Error('KI hat kein gültiges JSON zurückgegeben');
+  return parsed;
+}
+
+async function analyzeWithGemini(text, b64img) {
+  const parts = [];
   if (b64img) parts.push({ inlineData: { mimeType:"image/jpeg", data:b64img }});
   parts.push({ text:`Analysiere ${b64img?'das Bild (Zutaten oder Nährwerttabelle)':'die Zutaten/Mahlzeit in "'+(text||'')+'"'} und schätze Nährwerte für 1 Portion.\nAntworte NUR mit gültigem JSON:\n{"name":"Speisename/Produktname","calories":0,"protein":0,"carbs":0,"fat":0}\nGanzzahlen. Realistisch und präzise.` });
   const response = await callGemini([{ parts }]);
@@ -763,34 +1060,88 @@ async function geminiAnalyze(text, b64img) {
   catch(e) { throw new Error('KI hat kein gültiges JSON zurückgegeben. Nochmal versuchen.'); }
 }
 
+async function analyzeWithGroq(text) {
+  const key = getGroqKey();
+  if (!key) throw new Error('no_groq_key');
+  const sys = `Analysiere die Mahlzeit/Zutaten: "${text}" und schätze die Nährwerte für 1 Portion. Antworte NUR mit gültigem JSON (kein Markdown): {"name":"Speisename","calories":0,"protein":0,"carbs":0,"fat":0}`;
+  const response = await callGroq([{ role: 'user', content: sys }]);
+  const cleaned = response.replace(/```json\n?|\n?```/g, '').trim();
+  return JSON.parse(cleaned);
+}
+
+function analyzeLocally(text) {
+  // Versuche lokale Erkennung
+  const result = localFoodAnalyze(text);
+  if (result) return { ...result };
+  
+  // Grobes Fallback basierend auf Kalorien-Keywords
+  const lower = text.toLowerCase();
+  if (lower.includes('salat') && !lower.includes('kartoffel')) return {name:'Gemischter Salat', calories:150, protein:5, carbs:15, fat:7};
+  if (lower.includes('bowl')) return {name:'Bowl', calories:420, protein:18, carbs:52, fat:15};
+  if (lower.includes('smoothie')) return {name:'Smoothie', calories:200, protein:4, carbs:42, fat:2};
+  
+  return null;
+}
+
 async function addActivityAI() {
     const text = prompt("Aktivität beschreiben (z.B. '45 Min gejoggt' oder '1h Krafttraining'):");
     if(!text) return;
     
     showToast("KI berechnet Verbrauch...");
-    const sys = `Du bist ein Sportwissenschaftler. Schätze den Kalorienverbrauch und zusätzlich benötigte Makros (Regeneration) für diese Aktivität: "${text}". Berücksichtige Dauer und Intensität. Antworte NUR als JSON im folgenden Format: {"name":"Kurzer Name (z.B. Joggen)", "kcal":300, "carbs":40, "protein":10, "fat":5}`;
+    const sys = `Du bist ein Sportwissenschaftler. Schätze den Kalorienverbrauch und zusätzlich benötigte Makros (Regeneration) für diese Aktivität: "${text}". Antworte NUR als JSON ohne Markdown: {"name":"Kurzer Name", "kcal":300, "carbs":40, "protein":10, "fat":5}`;
     
     try {
-        let resp;
-        if(S.geminiKey) {
-            resp = await callGemini([{parts:[{text:sys}]}]);
-        } else if(getGroqKey()) {
-            resp = await callGroq([{role:'system',content:sys}]);
-        } else {
-            return showToast('Bitte hinterlege zuerst einen API Key (Gemini oder Groq) im Profil!');
+        let resp = null;
+        
+        // Versuch Claude
+        if (getClaudeKey()) {
+          try { resp = await callClaude([{role:'user',content:sys}], null, 200); }
+          catch(e) { console.warn('Claude Activity Fehler', e.message); }
+        }
+        // Versuch Gemini
+        if (!resp && S.geminiKey) {
+          try { resp = await callGemini([{parts:[{text:sys}]}]); }
+          catch(e) { console.warn('Gemini Activity Fehler', e.message); }
+        }
+        // Versuch Groq
+        if (!resp && getGroqKey()) {
+          try { resp = await callGroq([{role:'user',content:sys}]); }
+          catch(e) { console.warn('Groq Activity Fehler', e.message); }
         }
         
-        const data = JSON.parse(resp.replace(/`json\n?|\n?`/g, '').trim());
+        // Lokaler Fallback für häufige Aktivitäten
+        if (!resp) {
+          const lower = text.toLowerCase();
+          const dur = parseInt(text.match(/(\d+)/)?.[1] || 30);
+          let kcal = 0, name = 'Sport';
+          if (lower.includes('lauf') || lower.includes('jogg') || lower.includes('rennen')) { kcal = Math.round(dur * 9); name = 'Joggen'; }
+          else if (lower.includes('rad') || lower.includes('fahrrad') || lower.includes('cycling')) { kcal = Math.round(dur * 7); name = 'Radfahren'; }
+          else if (lower.includes('schwimm')) { kcal = Math.round(dur * 8); name = 'Schwimmen'; }
+          else if (lower.includes('kraft') || lower.includes('gym') || lower.includes('gewicht')) { kcal = Math.round(dur * 5); name = 'Krafttraining'; }
+          else if (lower.includes('yoga') || lower.includes('dehnung')) { kcal = Math.round(dur * 3); name = 'Yoga'; }
+          else if (lower.includes('hiit') || lower.includes('interval')) { kcal = Math.round(dur * 10); name = 'HIIT'; }
+          else if (lower.includes('spazier') || lower.includes('gehen') || lower.includes('walk')) { kcal = Math.round(dur * 4); name = 'Spazieren'; }
+          else { kcal = Math.round(dur * 5); name = text.substring(0,30); }
+          
+          const log = S.dayLog;
+          if(!log.activities) log.activities = [];
+          log.activities.push({ name, kcal, id: uid() });
+          S.saveDayLog(log);
+          renderView('dashboard');
+          return showToast(`Sport eingetragen: +${kcal} kcal (lokale Schätzung)`);
+        }
+        
+        const data = JSON.parse(resp.replace(/```json\n?|\n?```/g, '').trim());
         if(!data.kcal) throw new Error('Keine Kalorien erkannt');
         
         const log = S.dayLog;
-        if(!log.activities) log.activities =[];
+        if(!log.activities) log.activities = [];
         log.activities.push({...data, id:uid()});
         S.saveDayLog(log);
         renderView('dashboard');
         showToast(`Sport hinzugefügt: +${data.kcal} kcal zum Tagesziel!`);
     } catch(e) { 
-        showToast('KI-Fehler: ' + e.message); 
+        showToast('Fehler: ' + e.message); 
     }
 }
 
@@ -1666,10 +2017,12 @@ const DB_SOURCES =[
   { id:'fs',   label:'🟠 FatSecret',       desc:'Internationale DB, braucht kostenfreien API-Key' },
 ];
 const AI_PROVIDERS =[
-  { id:'gemini',  label:'✨ Google Gemini', desc:'Gemini 2.5 Flash – benötigt Google AI Studio Key' },
-  { id:'groq',    label:'⚡ Groq (Llama)',  desc:'Llama 3.3 70B – kostenlos, sehr schnell' },
-  { id:'mistral', label:'🌟 Mistral AI',    desc:'Mistral Large – benötigt Mistral API Key (console.mistral.ai)' },
-  { id:'both',    label:'✨⚡🌟 Alle 3 kombiniert', desc:'Gemini + Groq + Mistral → eine zusammengefasste Antwort' },
+  { id:'claude',  label:'🤖 Claude (Anthropic)', desc:'claude-haiku – schnell, kostenlos per API Key (console.anthropic.com)' },
+  { id:'auto',    label:'🔄 Auto (beste verfügbare)', desc:'Probiert automatisch: Claude → Groq → Gemini → Lokal' },
+  { id:'groq',    label:'⚡ Groq (Llama)',  desc:'Llama 3.3 70B – kostenloser API Key (console.groq.com)' },
+  { id:'gemini',  label:'✨ Google Gemini', desc:'Gemini 2.5 Flash – API Key von Google AI Studio' },
+  { id:'mistral', label:'🌟 Mistral AI',    desc:'Mistral Large – API Key von console.mistral.ai' },
+  { id:'local',   label:'📴 Offline / Lokal', desc:'Kein API-Key nötig – lokale Datenbank & einfache Antworten' },
 ];
 
 function _radioRow(id, selected, onclick, label, desc) {
@@ -1771,21 +2124,29 @@ function renderProfile(el){
 
   <div class="card" style="margin-top:16px">
     <h3 style="margin-bottom:6px;display:flex;align-items:center;gap:8px"><span>🤖</span> KI-Coach Anbieter</h3>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:16px;font-weight:500">Welches "Gehirn" soll den Chatbot antreiben?</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px;font-weight:500">Welches "Gehirn" soll den Chatbot antreiben? Ohne Key läuft die App auch offline.</p>
     ${AI_PROVIDERS.map(s => _radioRow(s.id, aiProv, 'selectAIProvider', s.label, s.desc)).join('')}
   </div>
 
   <div class="card" style="margin-top:16px">
     <h3 style="margin-bottom:16px;display:flex;align-items:center;gap:8px"><span>🔑</span> KI API-Keys</h3>
+    <div style="padding:12px 14px;background:var(--accent-dim);border:1px solid var(--accent);border-radius:14px;font-size:13px;color:var(--text);line-height:1.6;margin-bottom:20px">
+      💡 <strong>Tipp:</strong> Die App funktioniert auch <strong>ohne Key</strong> (Offline-Modus). Für smarte Analysen empfehlen wir <strong>Groq</strong> (100% kostenlos, kein Kreditkarte nötig) oder <strong>Claude</strong>.
+    </div>
     <div style="margin-bottom:16px">
-      <label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">✨ Google Gemini Key <span style="font-size:11px;font-weight:400">(Wichtig für Foto-Scans)</span></label>
-      <input class="inp" id="gemini-key-inp" type="password" value="${S.geminiKey}" placeholder="AIzaSy...">
-      <button onclick="window.saveGeminiKey()" class="btn btn-ghost" style="width:100%;margin-top:10px;font-size:13px">Gemini Key speichern</button>
+      <label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">🤖 Claude API Key <span style="font-size:11px;font-weight:400;color:var(--accent)">(Empfohlen – console.anthropic.com)</span></label>
+      <input class="inp" id="claude-key-inp" type="password" value="${getClaudeKey()}" placeholder="sk-ant-...">
+      <button onclick="window.saveClaudeKey()" class="btn btn-ghost" style="width:100%;margin-top:10px;font-size:13px">Claude Key speichern</button>
     </div>
     <div style="margin-bottom:16px;padding-top:16px;border-top:1px dashed var(--border)">
-      <label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">⚡ Groq Key <span style="font-size:11px;font-weight:400">(Optional, rasante Chat-Chats)</span></label>
+      <label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">⚡ Groq Key <span style="font-size:11px;font-weight:400">(100% kostenlos – console.groq.com)</span></label>
       <input class="inp" id="groq-key-inp" type="password" value="${getGroqKey()}" placeholder="gsk_...">
       <button onclick="window.saveGroqKey()" class="btn btn-ghost" style="width:100%;margin-top:10px;font-size:13px">Groq Key speichern</button>
+    </div>
+    <div style="margin-bottom:16px;padding-top:16px;border-top:1px dashed var(--border)">
+      <label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">✨ Google Gemini Key <span style="font-size:11px;font-weight:400">(Wichtig für Foto-Scans ohne Claude Key)</span></label>
+      <input class="inp" id="gemini-key-inp" type="password" value="${S.geminiKey}" placeholder="AIzaSy...">
+      <button onclick="window.saveGeminiKey()" class="btn btn-ghost" style="width:100%;margin-top:10px;font-size:13px">Gemini Key speichern</button>
     </div>
     <div style="padding-top:16px;border-top:1px dashed var(--border)">
       <label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">🌟 Mistral Key <span style="font-size:11px;font-weight:400">(Optional)</span></label>
@@ -1882,6 +2243,7 @@ window.saveProfileData = function(){
   renderView('dashboard');
 };
 
+window.saveClaudeKey = function(){ const k = document.getElementById('claude-key-inp')?.value.trim(); if(k){ store('claudeApiKey', k); showToast('Claude API-Key gespeichert ✓'); } };
 window.saveGeminiKey = function(){ const k = document.getElementById('gemini-key-inp').value.trim(); if(k){ S.setGeminiKey(k); showToast('Gemini API-Key gespeichert ✓'); } };
 window.saveGroqKey = function(){ const k = document.getElementById('groq-key-inp')?.value.trim(); if(k){ store('groqApiKey', k); showToast('Groq Key gespeichert ✓'); } };
 window.saveMistralKey = function(){ const k = document.getElementById('mistral-key-inp')?.value.trim(); if(k){ store('mistralApiKey', k); showToast('Mistral Key gespeichert ✓'); } };
@@ -2279,21 +2641,66 @@ async function analyzeAI(){
   const btn = document.getElementById('ai-analyze-btn');
   if(btn){ btn.disabled = true; btn.innerHTML = `<span style="display:inline-block;animation:spin 1s linear infinite;margin-right:6px">🧠</span> Analysiere Makros...`; }
   
+  let result = null;
+  let source = '';
+  
   try {
-    const result = await geminiAnalyze(text, b64);
+    // Versuch 1: Claude (unterstützt Bilder + Text)
+    if (getClaudeKey()) {
+      try {
+        result = await analyzeWithClaude(text, b64);
+        source = 'Claude';
+      } catch(e) {
+        if (e.message !== 'no_claude_key') console.warn('Claude Analyse fehlgeschlagen:', e.message);
+      }
+    }
+    
+    // Versuch 2: Gemini (unterstützt Bilder + Text)
+    if (!result && S.geminiKey) {
+      try {
+        result = await analyzeWithGemini(text, b64);
+        source = 'Gemini';
+      } catch(e) { console.warn('Gemini Analyse fehlgeschlagen:', e.message); }
+    }
+    
+    // Versuch 3: Groq (nur Text, kein Bild)
+    if (!result && !b64 && getGroqKey()) {
+      try {
+        result = await analyzeWithGroq(text);
+        source = 'Groq';
+      } catch(e) { console.warn('Groq Analyse fehlgeschlagen:', e.message); }
+    }
+    
+    // Versuch 4: Lokale Datenbank (kein API-Key nötig, nur Text)
+    if (!result && text) {
+      const local = analyzeLocally(text);
+      if (local) { result = local; source = 'Lokal'; }
+    }
+    
+    if (!result) {
+      if(btn){ btn.disabled = false; btn.innerHTML = '✨ KI Analyse erneut starten'; }
+      if (!getClaudeKey() && !S.geminiKey && !getGroqKey()) {
+        showToast('Kein API-Key hinterlegt. Nutze "Manuell" oder hinterlege einen Key im Profil.');
+      } else {
+        showToast('Keine Ergebnisse – versuche eine genauere Beschreibung.');
+      }
+      return;
+    }
+    
     addMeal({ 
         name: result.name || "Mein Gericht (KI Schätzung)", 
-        calories: result.calories||0, 
-        protein: result.protein||0, 
-        carbs: result.carbs||0, 
-        fat: result.fat||0, 
+        calories: result.calories || 0, 
+        protein: result.protein || 0, 
+        carbs: result.carbs || 0, 
+        fat: result.fat || 0, 
         mealType: tempMealType 
     });
     closeModal();
-    setTimeout(() => { showToast('Vorsicht, Makros durch KI sind nur Richtwerte! ✓'); }, 500);
+    const note = source === 'Lokal' ? '(Lokale Datenbank – ggf. anpassen)' : `(${source} Schätzung – nur Richtwerte)`;
+    setTimeout(() => { showToast(`✓ Eingetragen! ${note}`); }, 400);
   } catch(e) {
-    showToast(e.message);
-    if(btn){ btn.disabled = false; btn.textContent = '✨ KI Analyse erneut starten'; }
+    showToast('Analyse fehlgeschlagen: ' + e.message);
+    if(btn){ btn.disabled = false; btn.innerHTML = '✨ KI Analyse erneut starten'; }
   }
 }
 
