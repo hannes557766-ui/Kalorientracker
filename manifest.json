@@ -1,21 +1,28 @@
 {
-  "name": "Kalorify",
+  "name": "Kalorify • Personal Coach Edition",
   "short_name": "Kalorify",
-  "start_url": "./index.html",
+  "description": "Dein smarter KI-Ernährungscoach – Kalorien tracken, Foto-Analyse, Barcode, Chat und automatisches Tracking. Kostenlos, offline-fähig und ohne Abo.",
+  "start_url": "/Kalorientracker/",
+  "scope": "/Kalorientracker/",
+  "id": "/Kalorientracker/",
   "display": "standalone",
-  "background_color": "#07070F",
-  "theme_color": "#07070F",
   "orientation": "portrait",
+  "background_color": "#07070F",
+  "theme_color": "#AADF3C",
+  "lang": "de",
+  "categories": ["health", "fitness", "lifestyle", "productivity"],
   "icons": [
     {
       "src": "https://placehold.co/192x192/AADF3C/000000.png?text=K",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "https://placehold.co/512x512/AADF3C/000000.png?text=K",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
