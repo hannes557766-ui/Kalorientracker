@@ -63,8 +63,29 @@
   --text:#382B21;--muted:#806D5E;--dim:#AE9F90;
   --shadow: 0 4px 14px rgba(71, 43, 18, 0.05);
 }
+.theme-pearl {
+  --bg:#FBFBFD;--card:#FFFFFF;--card2:#F3F5FA;--border:#E3E7EF;
+  --text:#1C2430;--muted:#667285;--dim:#97A3B5;
+  --shadow: 0 4px 16px rgba(17, 24, 39, 0.04);
+}
+.theme-cloud {
+  --bg:#F6F8FC;--card:#FFFFFF;--card2:#EEF3FA;--border:#D9E2EE;
+  --text:#172033;--muted:#66758C;--dim:#90A0B4;
+  --shadow: 0 4px 16px rgba(20, 34, 66, 0.04);
+}
+.theme-lavender {
+  --bg:#F7F4FF;--card:#FFFFFF;--card2:#ECE7FA;--border:#D9D0EF;
+  --text:#26213B;--muted:#6D678A;--dim:#9A94B3;
+  --shadow: 0 4px 16px rgba(47, 24, 94, 0.04);
+}
+.theme-sand {
+  --bg:#FFF8EF;--card:#FFFFFF;--card2:#F6EBDD;--border:#E8D8C2;
+  --text:#33261A;--muted:#7A6655;--dim:#B09B87;
+  --shadow: 0 4px 16px rgba(88, 58, 28, 0.04);
+}
 
 html,body{height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);overflow:hidden;transition:background-color 0.3s}
+h1,h2,h3{font-family:'DM Sans',sans-serif !important;letter-spacing:-0.03em !important;font-weight:800 !important;}
 ::-webkit-scrollbar{display:none}
 input,textarea,button,select{font-family:inherit;outline:none}
 input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
@@ -145,6 +166,7 @@ textarea{resize:none}
 .color-dot { width: 34px; height: 34px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.2); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
 .color-dot:active { transform:scale(0.9); }
 .color-dot.active { border-color: var(--text); transform: scale(1.15); }
+.accent-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;justify-items:center;max-width:420px;margin:0 auto;}
 
 /* Water tracker */
 .water-btn{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:12px 0;font-size:13px;font-weight:700;cursor:pointer;color:var(--text);flex:1;text-align:center;transition:all .15s}
@@ -273,7 +295,7 @@ const S = {
     return 'log-' + this.currentDate; 
   },
   get dayLog(){ 
-    return load(this.dayKey) || {meals:[], activities:[], steps: 0}; 
+    return load(this.dayKey) || {meals:[], activities:[], steps: 0, sleep: {hours: null}}; 
   },
   saveDayLog(log){ 
     store(this.dayKey, log); 
@@ -290,7 +312,8 @@ const S = {
     return load('profile'); 
   },
   saveProfile(p){ 
-    store('profile', p); this.profile = p; 
+    const normalized = normalizeProfile(p);
+    store('profile', normalized); this.profile = normalized; 
   },
   
   get waterKey(){ 
@@ -466,12 +489,16 @@ function applyTheme(opts) {
   const COLORS = {
     lime: { accent: '#AADF3C', dim: 'rgba(170,223,60,0.12)', glow: 'rgba(170,223,60,0.25)' },
     blue: { accent: '#60A5FA', dim: 'rgba(96,165,250,0.12)', glow: 'rgba(96,165,250,0.25)' },
-    purple: { accent: '#A78BFA', dim: 'rgba(167,139,250,0.12)', glow: 'rgba(167,139,250,0.25)' },
-    orange: { accent: '#FB923C', dim: 'rgba(251,146,60,0.12)', glow: 'rgba(251,146,60,0.25)' },
-    pink: { accent: '#F472B6', dim: 'rgba(244,114,182,0.12)', glow: 'rgba(244,114,182,0.25)' },
     teal: { accent: '#2DD4BF', dim: 'rgba(45,212,191,0.12)', glow: 'rgba(45,212,191,0.25)' },
+    purple: { accent: '#A78BFA', dim: 'rgba(167,139,250,0.12)', glow: 'rgba(167,139,250,0.25)' },
+    pink: { accent: '#F472B6', dim: 'rgba(244,114,182,0.12)', glow: 'rgba(244,114,182,0.25)' },
     rose: { accent: '#FB7185', dim: 'rgba(251,113,133,0.12)', glow: 'rgba(251,113,133,0.25)' },
-    gold: { accent: '#FBBF24', dim: 'rgba(251,191,36,0.12)', glow: 'rgba(251,191,36,0.25)' }
+    orange: { accent: '#FB923C', dim: 'rgba(251,146,60,0.12)', glow: 'rgba(251,146,60,0.25)' },
+    gold: { accent: '#FBBF24', dim: 'rgba(251,191,36,0.12)', glow: 'rgba(251,191,36,0.25)' },
+    indigo: { accent: '#818CF8', dim: 'rgba(129,140,248,0.12)', glow: 'rgba(129,140,248,0.25)' },
+    cyan: { accent: '#22D3EE', dim: 'rgba(34,211,238,0.12)', glow: 'rgba(34,211,238,0.25)' },
+    emerald: { accent: '#34D399', dim: 'rgba(52,211,153,0.12)', glow: 'rgba(52,211,153,0.25)' },
+    red: { accent: '#F87171', dim: 'rgba(248,113,113,0.12)', glow: 'rgba(248,113,113,0.25)' }
   };
 
   const c = COLORS[color] || COLORS.lime;
@@ -503,10 +530,11 @@ function updateAndSaveTheme() {
   }
 }
 
-function selectColor(c) {
+function selectColor(c, evt) {
   document.getElementById('prof-color').value = c;
   document.querySelectorAll('.color-dot').forEach(el => el.classList.remove('active'));
-  event.target.classList.add('active');
+  const target = evt?.currentTarget || evt?.target || window.event?.target;
+  if (target) target.classList.add('active');
   updateAndSaveTheme();
 }
 
@@ -524,6 +552,57 @@ const MEAL_TYPES =[
   {id:'dinner',label:'Abendessen',emoji:'🌙'},
   {id:'snack',label:'Snack',emoji:'🍎'}
 ];
+
+const DEFAULT_DASHBOARD_WIDGETS = {
+  meals: true,
+  water: true,
+  sleep: true,
+  activity: true,
+  weekly: true,
+  weight: true
+};
+
+function normalizeProfile(p) {
+  if (!p) return p;
+  p.dashboardWidgets = { ...DEFAULT_DASHBOARD_WIDGETS, ...(p.dashboardWidgets || {}) };
+  if (typeof p.sleepGoal !== 'number') p.sleepGoal = 8;
+  return p;
+}
+
+function getDashboardWidgetPrefs() {
+  return { ...DEFAULT_DASHBOARD_WIDGETS, ...(S.profile?.dashboardWidgets || {}) };
+}
+
+function widgetLabelForKey(key) {
+  return ({
+    meals: 'Mahlzeiten',
+    water: 'Wasser',
+    sleep: 'Schlaf',
+    activity: 'Schritte & Aktivität',
+    weekly: 'Woche',
+    weight: 'Gewicht'
+  })[key] || key;
+}
+
+function saveDashboardWidgetPrefs(prefs) {
+  if (!S.profile) S.profile = {};
+  S.profile.dashboardWidgets = { ...DEFAULT_DASHBOARD_WIDGETS, ...(prefs || {}) };
+  S.saveProfile(S.profile);
+}
+
+function _widgetToggleRow(key, label, desc, checked) {
+  return `
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px;background:var(--card2);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow)">
+    <div style="min-width:0;flex:1">
+      <div style="font-weight:700;font-size:15px">${label}</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.4;margin-top:2px">${desc}</div>
+    </div>
+    <label class="toggle-switch" style="flex-shrink:0">
+      <input type="checkbox" ${checked ? 'checked' : ''} onchange="window.toggleDashboardWidget('${key}', this.checked)">
+      <span class="slider"></span>
+    </label>
+  </div>`;
+}
 
 function calcBaseTDEE(p){
   if(!p?.weight) return {calories:2800,protein:140,carbs:330,fat:80};
@@ -1551,14 +1630,96 @@ window.copyYesterday = function(mealType) {
   showToast(`${toCopy.length} Mahlzeit(en) kopiert! ♻️`);
 };
 
+window.toggleDashboardWidget = function(key, checked) {
+  const prefs = getDashboardWidgetPrefs();
+  prefs[key] = checked;
+  saveDashboardWidgetPrefs(prefs);
+  if (currentView === 'dashboard') renderView('dashboard');
+  showToast(`${widgetLabelForKey(key)} ${checked ? 'eingeblendet' : 'ausgeblendet'}`);
+};
+
+window.openSleepModal = function() {
+  const mc = document.getElementById('modal-container');
+  const sleepHours = S.dayLog.sleep?.hours;
+  const sleepGoal = (S.profile && S.profile.sleepGoal) || 8;
+  mc.innerHTML = `
+  <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal-box scale-in">
+      <h2 style="margin-bottom:16px;display:flex;align-items:center;gap:10px"><span>😴</span> Schlaf-Tracking</h2>
+      <p style="font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:16px">Trage ein, wie lange du letzte Nacht geschlafen hast. Das erscheint dann als Widget auf der Startseite.</p>
+      <label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">Schlafstunden</label>
+      <input type="number" id="sleep-hours-inp" class="inp" value="${sleepHours ?? ''}" step="0.5" min="0" max="24" placeholder="${sleepGoal} h" style="font-weight:800;font-size:18px;text-align:center;margin-bottom:14px">
+      <button onclick="window.saveSleepEntry()" class="btn" style="width:100%">Speichern</button>
+      <button onclick="closeModal()" class="btn btn-ghost" style="width:100%;margin-top:8px">Abbrechen</button>
+    </div>
+  </div>`;
+};
+
+window.saveSleepEntry = function() {
+  const raw = document.getElementById('sleep-hours-inp')?.value;
+  const hours = parseFloat(raw);
+  if (Number.isNaN(hours) || hours < 0 || hours > 24) {
+    return showToast('Bitte gültige Schlafstunden eingeben.');
+  }
+  const log = S.dayLog;
+  log.sleep = { hours: Math.round(hours * 10) / 10 };
+  S.saveDayLog(log);
+  closeModal();
+  if (currentView === 'dashboard') renderView('dashboard');
+  showToast(`Schlaf gespeichert: ${Math.round(hours * 10) / 10} h`);
+};
+
+const MEAL_TARGET_SPLITS = { breakfast: 0.25, lunch: 0.35, dinner: 0.30, snack: 0.10 };
+
+function getDashboardMealState(){
+  return load('dashboardMealExpanded') || {};
+}
+function saveDashboardMealState(state){
+  store('dashboardMealExpanded', state);
+}
+function toggleDashboardMeal(type){
+  const state = getDashboardMealState();
+  state[type] = !state[type];
+  saveDashboardMealState(state);
+  renderView('dashboard');
+}
+function openDashboardAdd(type){
+  tempMealType = type || 'lunch';
+  openAddModal(type || 'lunch');
+}
+function mealTargetForType(type, totalTarget){
+  return Math.max(1, Math.round((totalTarget || 0) * (MEAL_TARGET_SPLITS[type] || 0.25)));
+}
+function mealProgressSvg(consumed, target){
+  const size = 92;
+  const r = 31;
+  const cx = 46;
+  const cy = 46;
+  const stroke = 8;
+  const circ = 2 * Math.PI * r;
+  const ratio = target > 0 ? consumed / target : 0;
+  const pct = Math.max(0, Math.min(1, ratio));
+  const dash = `${(pct * circ).toFixed(1)} ${circ.toFixed(1)}`;
+  const color = ratio > 1 ? 'var(--fat)' : 'var(--accent)';
+  const percentText = Math.round(Math.min(999, ratio * 100));
+  return `
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="flex-shrink:0">
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--border)" stroke-width="${stroke}"/>
+      <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="${stroke}" stroke-dasharray="${dash}" stroke-dashoffset="${(circ * 0.25).toFixed(1)}" stroke-linecap="round" style="transition:stroke-dasharray 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.1)"/>
+      <text x="${cx}" y="${cy - 8}" text-anchor="middle" font-size="19" font-weight="800" fill="var(--text)">${Math.round(consumed)}</text>
+      <text x="${cx}" y="${cy + 8}" text-anchor="middle" font-size="9" font-weight="700" fill="var(--muted)">kcal</text>
+      <text x="${cx}" y="${cy + 22}" text-anchor="middle" font-size="9" font-weight="800" fill="${color}">${percentText}%</text>
+    </svg>`;
+}
+
 // ====================== DASHBOARD ======================
 function renderDashboard(el){
   const log = S.dayLog;
   const targets = getDynamicTargets(S.profile, log);
   const totals = sumMeals(log.meals);
   const dateStr = new Date(S.currentDate).toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+  const widgetPrefs = getDashboardWidgetPrefs();
   
-  const progress = targets.calories ? Math.min(100, Math.round(totals.calories / targets.calories * 100)) : 0;
   const protPct = targets.protein ? Math.min(100, Math.round(totals.protein / targets.protein * 100)) : 0;
   const carbPct = targets.carbs ? Math.min(100, Math.round(totals.carbs / targets.carbs * 100)) : 0;
   const fatPct = targets.fat ? Math.min(100, Math.round(totals.fat / targets.fat * 100)) : 0;
@@ -1568,8 +1729,13 @@ function renderDashboard(el){
 
   const waterGoal = (S.profile && S.profile.waterGoal) || 2500;
   const waterNow  = S.todayWater;
-  const waterPct  = Math.min(100, Math.round(waterNow / waterGoal * 100));
+  const waterPct  = Math.min(100, Math.round((waterNow / waterGoal) * 100));
   const waterGlasses = Math.round(waterNow / 250);
+
+  const sleepGoal = (S.profile && S.profile.sleepGoal) || 8;
+  const sleepHours = log.sleep?.hours ?? null;
+  const sleepPct = sleepHours === null ? 0 : Math.min(100, Math.round((sleepHours / sleepGoal) * 100));
+  const sleepStatus = sleepHours === null ? 'Noch nicht erfasst' : `${sleepHours.toFixed(1)} h von ${sleepGoal} h Ziel`;
 
   const wLog = S.getWeightLog();
   const lastWeight = wLog.length ? wLog[wLog.length-1].kg : (S.profile?.weight || '–');
@@ -1597,58 +1763,163 @@ function renderDashboard(el){
   }).join('');
 
   const groupedMeals = {};
-  MEAL_TYPES.forEach(t => { groupedMeals[t.id] =[]; });
-  log.meals.forEach(m => { const t = m.mealType || 'snack'; (groupedMeals[t] = groupedMeals[t] ||[]).push(m); });
+  MEAL_TYPES.forEach(t => { groupedMeals[t.id] = []; });
+  log.meals.forEach(m => { const t = m.mealType || 'snack'; (groupedMeals[t] = groupedMeals[t] || []).push(m); });
 
-  let mealsHTML = '';
-  
-  MEAL_TYPES.forEach(type => {
-      const meals = groupedMeals[type.id];
-      if (!meals || meals.length === 0) {
-         mealsHTML += `<div style="margin-bottom:14px">
-           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-bottom:4px;border-bottom:1px dashed var(--border)">
-             <div style="font-size:13px;font-weight:700;color:var(--muted)">${type.emoji} ${type.label}</div>
-             <button onclick="window.copyYesterday('${type.id}')" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s">♻️ Gestern kopieren</button>
-           </div>
-         </div>`;
-         return;
-      }
-      const groupCal = meals.reduce((s,m) => s + (m.calories||0), 0);
-      mealsHTML += `<div style="margin-bottom:14px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div style="font-size:13px;font-weight:700;color:var(--muted)">${type.emoji} ${type.label}</div>
-          <div style="font-size:12px;color:var(--muted)">${groupCal} kcal</div>
-        </div>`;
-      meals.forEach(m => {
-        mealsHTML += `<div class="card fade-up" style="padding:14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;background:var(--card2);border:none;box-shadow:none;">
-          <div style="flex:1;min-width:0">
-            <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.name}</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:4px">
-              <span style="color:var(--accent);font-weight:800">${m.calories} kcal</span>
-              &nbsp;· P:${m.protein}g KH:${m.carbs}g F:${m.fat}g
-            </div>
-          </div>
-          <div style="display:flex;gap:6px;margin-left:8px;flex-shrink:0">
-            <button onclick="openEditMealModal('${m.id}')" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--dim);width:34px;height:34px;border-radius:10px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s">✎</button>
-            <button onclick="removeMeal('${m.id}')" style="background:rgba(248,113,113,0.1);border:none;color:var(--fat);font-size:18px;cursor:pointer;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;transition:transform 0.15s">×</button>
-          </div>
-        </div>`;
-      });
-      mealsHTML += `</div>`;
-  });
-
-  const actHTML = (log.activities||[]).map(a => `
-    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;color:var(--muted);padding:4px 0">
-      <span style="font-weight:600">🏃 ${a.name}</span>
-      <span style="color:var(--success);font-weight:700">+${a.kcal} kcal 
-        <button onclick="window.removeActivity('${a.id}')" style="background:none;border:none;color:var(--fat);font-size:16px;cursor:pointer;margin-left:6px;transform:translateY(1px);padding:0 4px">×</button>
-      </span>
+  const expandedMeals = getDashboardMealState();
+  const mealContent = (meals) => meals.map(m => `
+    <div class="card fade-up" style="padding:14px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;background:var(--card2);border:none;box-shadow:none;">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.name}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">
+          <span style="color:var(--accent);font-weight:800">${m.calories} kcal</span>
+          &nbsp;· P:${m.protein}g KH:${m.carbs}g F:${m.fat}g
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-left:8px;flex-shrink:0">
+        <button onclick="event.stopPropagation();openEditMealModal('${m.id}')" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--dim);width:34px;height:34px;border-radius:10px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s">✎</button>
+        <button onclick="event.stopPropagation();removeMeal('${m.id}')" style="background:rgba(248,113,113,0.1);border:none;color:var(--fat);font-size:18px;cursor:pointer;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;transition:transform 0.15s">×</button>
+      </div>
     </div>
   `).join('');
 
-  // Datums-Auswahl fix für Light Modes, damit nativer Picker hell aufspringt
+  const mealCardsHTML = widgetPrefs.meals ? MEAL_TYPES.map(type => {
+    const meals = groupedMeals[type.id] || [];
+    const target = mealTargetForType(type.id, targets.calories);
+    const consumed = meals.reduce((s,m) => s + (m.calories || 0), 0);
+    const remainingMeal = target - consumed;
+    const isExpanded = expandedMeals[type.id] === true;
+    const openText = meals.length ? `${consumed} / ${target} kcal` : `Noch nichts eingetragen • Ziel ${target} kcal`;
+    return `
+    <div class="card" style="margin-top:12px;padding:16px 16px 14px;border-radius:24px">
+      <div onclick="toggleDashboardMeal('${type.id}')" style="display:flex;align-items:center;gap:14px;cursor:pointer;user-select:none">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+            <div style="min-width:0">
+              <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                <div style="width:10px;height:10px;border-radius:999px;background:var(--accent);flex-shrink:0"></div>
+                <div style="font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${type.emoji} ${type.label}</div>
+              </div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px;font-weight:600">${openText}${meals.length ? ` • ${remainingMeal > 0 ? `${remainingMeal} kcal frei` : `${Math.abs(remainingMeal)} kcal drüber`}` : ''}</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-shrink:0;align-items:center">
+              <button onclick="event.stopPropagation();window.copyYesterday('${type.id}')" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer;transition:all .15s">♻️</button>
+              <button onclick="event.stopPropagation();openDashboardAdd('${type.id}')" style="width:34px;height:34px;border-radius:12px;border:none;background:var(--accent);color:#000;font-size:20px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px var(--accent-glow)">+</button>
+            </div>
+          </div>
+        </div>
+        ${mealProgressSvg(consumed, target)}
+      </div>
+      <div style="margin-top:${isExpanded ? 14 : 0}px;max-height:${isExpanded ? '2000px' : '0px'};overflow:hidden;transition:max-height .28s ease, margin-top .28s ease">
+        ${meals.length ? mealContent(meals) : '<div style="padding:12px 2px 4px;color:var(--muted);font-size:13px;line-height:1.5">Noch keine Einträge in dieser Kategorie.</div>'}
+      </div>
+    </div>`;
+  }).join('') : '';
+
+  const activityWidgetHTML = widgetPrefs.activity ? `
+  <div class="card" style="margin-top:12px;padding:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-weight:700;font-size:13px">🏃 Schritte & Aktivität</div>
+      <button onclick="addActivityAI()" style="background:var(--accent-dim);color:var(--accent);border:none;padding:6px 12px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;transition:transform 0.1s">+ Sport (KI)</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:10px 0;border-bottom:1px solid var(--border);margin-bottom:8px">
+      <span style="color:var(--muted);font-weight:600">👟 Schritte heute:</span>
+      <span style="font-weight:800;cursor:pointer;color:var(--accent);padding:4px 10px;background:var(--card2);border-radius:10px;transition:all 0.15s" onclick="window.updateSteps()">${log.steps || 0} <span style="font-size:14px;margin-left:4px">✎</span></span>
+    </div>
+    ${(log.activities||[]).map(a => `
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;color:var(--muted);padding:4px 0">
+        <span style="font-weight:600">🏃 ${a.name}</span>
+        <span style="color:var(--success);font-weight:700">+${a.kcal} kcal 
+          <button onclick="window.removeActivity('${a.id}')" style="background:none;border:none;color:var(--fat);font-size:16px;cursor:pointer;margin-left:6px;transform:translateY(1px);padding:0 4px">×</button>
+        </span>
+      </div>
+    `).join('')}
+  </div>` : '';
+
+  const waterWidgetHTML = widgetPrefs.water ? `
+  <div class="card" style="margin-top:12px;padding:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-weight:700;font-size:13px">💧 Wasser</div>
+      <button onclick="window.openWaterModal()" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer">Anpassen</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="flex-shrink:0;position:relative;width:92px;height:92px">
+        <svg width="92" height="92" viewBox="0 0 92 92">
+          <circle cx="46" cy="46" r="31" fill="none" stroke="var(--border)" stroke-width="8"/>
+          <circle cx="46" cy="46" r="31" fill="none" stroke="var(--accent)" stroke-width="8" stroke-dasharray="${((Math.min(1, waterNow / waterGoal) * 2 * Math.PI * 31)).toFixed(1)} ${(2 * Math.PI * 31).toFixed(1)}" stroke-dashoffset="${(2 * Math.PI * 31 * 0.25).toFixed(1)}" stroke-linecap="round"/>
+          <text x="46" y="38" text-anchor="middle" font-size="19" font-weight="800" fill="var(--text)">${waterNow}</text>
+          <text x="46" y="53" text-anchor="middle" font-size="9" font-weight="700" fill="var(--muted)">ml</text>
+        </svg>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700">${waterNow} / ${waterGoal} ml</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">≈ ${waterGlasses} Gläser • ${waterPct}% erreicht</div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button onclick="window.quickAddWater(250)" class="pill" style="padding:8px 12px">+250</button>
+          <button onclick="window.quickAddWater(500)" class="pill" style="padding:8px 12px">+500</button>
+        </div>
+      </div>
+    </div>
+  </div>` : '';
+
+  const sleepWidgetHTML = widgetPrefs.sleep ? `
+  <div class="card" style="margin-top:12px;padding:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-weight:700;font-size:13px">😴 Schlaf</div>
+      <button onclick="window.openSleepModal()" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer">Eintragen</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="flex-shrink:0;position:relative;width:92px;height:92px">
+        <svg width="92" height="92" viewBox="0 0 92 92">
+          <circle cx="46" cy="46" r="31" fill="none" stroke="var(--border)" stroke-width="8"/>
+          <circle cx="46" cy="46" r="31" fill="none" stroke="var(--accent)" stroke-width="8" stroke-dasharray="${((sleepPct / 100) * 2 * Math.PI * 31).toFixed(1)} ${(2 * Math.PI * 31).toFixed(1)}" stroke-dashoffset="${(2 * Math.PI * 31 * 0.25).toFixed(1)}" stroke-linecap="round"/>
+          <text x="46" y="38" text-anchor="middle" font-size="19" font-weight="800" fill="var(--text)">${sleepHours === null ? '—' : sleepHours.toFixed(1)}</text>
+          <text x="46" y="53" text-anchor="middle" font-size="9" font-weight="700" fill="var(--muted)">h</text>
+        </svg>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700">${sleepStatus}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Ziel: ${sleepGoal} Stunden Schlaf</div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button onclick="window.openSleepModal()" class="pill" style="padding:8px 12px">Bearbeiten</button>
+        </div>
+      </div>
+    </div>
+  </div>` : '';
+
+  const weightWidgetHTML = widgetPrefs.weight ? `
+  <div class="card" style="margin-top:12px;padding:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-weight:700;font-size:13px">⚖️ Gewicht</div>
+      <button onclick="window.logWeightEntry()" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer">Speichern</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="flex-shrink:0;position:relative;width:92px;height:92px">
+        <svg width="92" height="92" viewBox="0 0 92 92">
+          <circle cx="46" cy="46" r="31" fill="none" stroke="var(--border)" stroke-width="8"/>
+          <circle cx="46" cy="46" r="31" fill="none" stroke="var(--accent)" stroke-width="8" stroke-dasharray="${(1 * 2 * Math.PI * 31).toFixed(1)} ${(2 * Math.PI * 31).toFixed(1)}" stroke-dashoffset="${(2 * Math.PI * 31 * 0.25).toFixed(1)}" stroke-linecap="round" opacity="0.18"/>
+          <text x="46" y="38" text-anchor="middle" font-size="19" font-weight="800" fill="var(--text)">${lastWeight}</text>
+          <text x="46" y="53" text-anchor="middle" font-size="9" font-weight="700" fill="var(--muted)">kg</text>
+        </svg>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700">${todayHasWeight ? 'Heute gespeichert' : 'Letzter Eintrag'}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Aktuell: ${lastWeight} kg</div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <input id="weight-inp" type="number" class="inp" placeholder="${lastWeight}" style="max-width:120px;text-align:center;padding:10px 12px;font-weight:800">
+        </div>
+      </div>
+    </div>
+  </div>` : '';
+
+  const weeklyWidgetHTML = widgetPrefs.weekly ? `
+  <div class="card" style="margin-top:12px;padding:14px">
+    <div style="font-weight:700;font-size:13px;margin-bottom:10px">Wochen-Übersicht</div>
+    <div style="display:flex;gap:4px;align-items:flex-end">${weekBarsHTML}</div>
+  </div>` : '';
+
   const currentTheme = S.profile?.theme || 'dark';
-  const isLightScheme = ['light','creamy','mint','ice','sepia'].includes(currentTheme);
+  const isLightScheme = ['light','creamy','mint','ice','sepia','pearl','cloud','lavender','sand'].includes(currentTheme);
 
   el.innerHTML = `
 <div style="padding:20px 16px 8px" class="fade-up">
@@ -1658,7 +1929,7 @@ function renderDashboard(el){
   </div>
   ${streak >= 2 ? `<div style="background:var(--accent-dim);border:1px solid var(--accent);border-radius:9999px;padding:6px 12px;font-size:13px;font-weight:700;color:var(--accent)">🔥 ${streak} Tage</div>` : `<div style="color:var(--muted);font-size:13px;font-weight:600">${dateStr}</div>`}
 </div>
-<h1 style="font-family:'Syne',sans-serif;margin:0 0 16px">Übersicht</h1>
+<h1 style="margin:0 0 16px">Übersicht</h1>
 
   <div class="card" style="display:flex;align-items:center;gap:16px;padding:16px 20px">
     <div style="flex-shrink:0;position:relative">
@@ -1699,57 +1970,15 @@ function renderDashboard(el){
 
   ${isOver ? `<div style="background:rgba(248,113,113,0.12);border:1px solid var(--fat);border-radius:14px;padding:11px 14px;margin-top:10px;font-size:13px;color:var(--fat);font-weight:600">⚠️ Kalorienziel um ${totals.calories - targets.calories} kcal überschritten</div>` : ''}
 
-  <div class="card" style="margin-top:12px;padding:14px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div style="font-weight:700;font-size:13px">🏃 Schritte & Aktivität</div>
-      <button onclick="addActivityAI()" style="background:var(--accent-dim);color:var(--accent);border:none;padding:6px 12px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;transition:transform 0.1s">+ Sport (KI)</button>
-    </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:10px 0;border-bottom:1px solid var(--border);margin-bottom:8px">
-      <span style="color:var(--muted);font-weight:600">👟 Schritte heute:</span>
-      <span style="font-weight:800;cursor:pointer;color:var(--accent);padding:4px 10px;background:var(--card2);border-radius:10px;transition:all 0.15s" onclick="window.updateSteps()">${log.steps || 0} <span style="font-size:14px;margin-left:4px">✎</span></span>
-    </div>
-    ${actHTML}
-  </div>
+  ${widgetPrefs.activity ? activityWidgetHTML : ''}
+  ${widgetPrefs.water ? waterWidgetHTML : ''}
+  ${widgetPrefs.sleep ? sleepWidgetHTML : ''}
+  ${widgetPrefs.weight ? weightWidgetHTML : ''}
+  ${widgetPrefs.weekly ? weeklyWidgetHTML : ''}
 
-  <div class="card" style="margin-top:12px;padding:14px">
-    <div style="font-weight:700;font-size:13px;margin-bottom:10px">Wochen-Übersicht</div>
-    <div style="display:flex;gap:4px;align-items:flex-end">${weekBarsHTML}</div>
-  </div>
-
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
-
-    <div class="card" style="padding:16px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div style="font-weight:700;font-size:13px">💧 Wasser</div>
-        <div style="font-size:11px;color:var(--muted);font-weight:600">${waterGlasses} Gläser</div>
-      </div>
-      <div style="font-size:24px;font-weight:800;color:#60A5FA;letter-spacing:-0.5px">${waterNow >= 1000 ? (waterNow/1000).toFixed(1)+'L' : waterNow+'ml'}</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-weight:500">von ${waterGoal >= 1000 ? (waterGoal/1000).toFixed(1)+'L' : waterGoal+'ml'}</div>
-      <div style="height:6px;background:var(--border);border-radius:9999px;overflow:hidden;margin-bottom:12px">
-        <div style="height:100%;width:${waterPct}%;background:#60A5FA;transition:width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1)"></div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-        <button class="water-btn" onclick="window.quickAddWater(250)">+250</button>
-        <button class="water-btn" onclick="window.openWaterModal()">⚙️</button>
-      </div>
-    </div>
-
-    <div class="card" style="padding:16px">
-      <div style="font-weight:700;font-size:13px;margin-bottom:8px">⚖️ Gewicht</div>
-      <div style="font-size:24px;font-weight:800;color:var(--accent);letter-spacing:-0.5px">${lastWeight}<span style="font-size:14px;font-weight:500;color:var(--muted);letter-spacing:0"> kg</span></div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;font-weight:500">Zuletzt gespeichert</div>
-      <div style="display:flex;gap:6px">
-        <input type="number" id="weight-inp" class="inp" placeholder="kg" step="0.1" style="flex:1;font-size:14px;padding:8px 10px;min-width:0;font-weight:700;">
-        <button onclick="window.logWeightEntry()" class="btn" style="padding:8px 14px;border-radius:10px;font-size:14px;flex-shrink:0">✓</button>
-      </div>
-    </div>
-  </div>
-
-  <div style="margin-top:24px">
-    <div style="font-weight:800;font-size:18px;margin-bottom:16px;font-family:'Syne',sans-serif">Mahlzeiten Historie</div>
-    ${mealsHTML}
-  </div>
+  ${mealCardsHTML ? `<div style="margin-top:14px">${mealCardsHTML}</div>` : ''}
 </div>`;
+
 }
 
 window.changeDashboardDate = function(val){
@@ -2043,6 +2272,7 @@ function renderProfile(el){
   const dbSrc  = p.dbSource   || 'both';
   const aiProv = p.aiProvider || 'gemini';
   const currentTheme = p.theme || 'dark';
+  const widgetPrefs = getDashboardWidgetPrefs();
 
   el.innerHTML = `
 <div style="padding:20px 16px" class="fade-up">
@@ -2076,17 +2306,21 @@ function renderProfile(el){
     <div style="padding:16px;background:var(--card2);border-radius:18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;box-shadow:var(--shadow)">
       <div><div style="font-weight:700">Theme Auswahl</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Hintergrundfarbe</div></div>
       <select id="prof-theme-sel" class="inp" style="width:auto;padding:8px 12px;border-radius:10px;font-weight:600" onchange="updateAndSaveTheme()">
-        <optgroup label="Dark Themes">
-            <option value="dark" ${currentTheme==='dark'?'selected':''}>Dark (Standard)</option>
-            <option value="oled" ${currentTheme==='oled'?'selected':''}>Pitch Black (OLED)</option>
-            <option value="navy" ${currentTheme==='navy'?'selected':''}>Deep Navy</option>
-        </optgroup>
         <optgroup label="Light Themes">
             <option value="light" ${currentTheme==='light'?'selected':''}>Grau Light (Classic)</option>
             <option value="creamy" ${currentTheme==='creamy'?'selected':''}>Creme / Soft Warm</option>
             <option value="mint" ${currentTheme==='mint'?'selected':''}>Mint Green Light</option>
             <option value="ice" ${currentTheme==='ice'?'selected':''}>Ice Blue Light</option>
             <option value="sepia" ${currentTheme==='sepia'?'selected':''}>Vintage Sepia</option>
+            <option value="pearl" ${currentTheme==='pearl'?'selected':''}>Pearl White</option>
+            <option value="cloud" ${currentTheme==='cloud'?'selected':''}>Cloud Mist</option>
+            <option value="lavender" ${currentTheme==='lavender'?'selected':''}>Lavender Soft</option>
+            <option value="sand" ${currentTheme==='sand'?'selected':''}>Warm Sand</option>
+        </optgroup>
+        <optgroup label="Dark Themes">
+            <option value="dark" ${currentTheme==='dark'?'selected':''}>Dark (Standard)</option>
+            <option value="oled" ${currentTheme==='oled'?'selected':''}>Pitch Black (OLED)</option>
+            <option value="navy" ${currentTheme==='navy'?'selected':''}>Deep Navy</option>
         </optgroup>
       </select>
     </div>
@@ -2098,17 +2332,34 @@ function renderProfile(el){
 
     <div style="padding:16px;background:var(--card2);border-radius:18px;box-shadow:var(--shadow)">
        <div style="font-weight:700;margin-bottom:16px">Primäre Akzentfarbe</div>
-       <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;margin-bottom:4px">
-         <div class="color-dot ${acc==='lime'?'active':''}" style="background:#AADF3C" onclick="selectColor('lime')"></div>
-         <div class="color-dot ${acc==='blue'?'active':''}" style="background:#60A5FA" onclick="selectColor('blue')"></div>
-         <div class="color-dot ${acc==='teal'?'active':''}" style="background:#2DD4BF" onclick="selectColor('teal')"></div>
-         <div class="color-dot ${acc==='purple'?'active':''}" style="background:#A78BFA" onclick="selectColor('purple')"></div>
-         <div class="color-dot ${acc==='pink'?'active':''}" style="background:#F472B6" onclick="selectColor('pink')"></div>
-         <div class="color-dot ${acc==='rose'?'active':''}" style="background:#FB7185" onclick="selectColor('rose')"></div>
-         <div class="color-dot ${acc==='orange'?'active':''}" style="background:#FB923C" onclick="selectColor('orange')"></div>
-         <div class="color-dot ${acc==='gold'?'active':''}" style="background:#FBBF24" onclick="selectColor('gold')"></div>
+       <div class="accent-grid" style="margin-bottom:4px">
+         <div class="color-dot ${acc==='lime'?'active':''}" style="background:#AADF3C" onclick="selectColor('lime', event)"></div>
+         <div class="color-dot ${acc==='blue'?'active':''}" style="background:#60A5FA" onclick="selectColor('blue', event)"></div>
+         <div class="color-dot ${acc==='teal'?'active':''}" style="background:#2DD4BF" onclick="selectColor('teal', event)"></div>
+         <div class="color-dot ${acc==='purple'?'active':''}" style="background:#A78BFA" onclick="selectColor('purple', event)"></div>
+         <div class="color-dot ${acc==='pink'?'active':''}" style="background:#F472B6" onclick="selectColor('pink', event)"></div>
+         <div class="color-dot ${acc==='rose'?'active':''}" style="background:#FB7185" onclick="selectColor('rose', event)"></div>
+         <div class="color-dot ${acc==='orange'?'active':''}" style="background:#FB923C" onclick="selectColor('orange', event)"></div>
+         <div class="color-dot ${acc==='gold'?'active':''}" style="background:#FBBF24" onclick="selectColor('gold', event)"></div>
+         <div class="color-dot ${acc==='indigo'?'active':''}" style="background:#818CF8" onclick="selectColor('indigo', event)"></div>
+         <div class="color-dot ${acc==='cyan'?'active':''}" style="background:#22D3EE" onclick="selectColor('cyan', event)"></div>
+         <div class="color-dot ${acc==='emerald'?'active':''}" style="background:#34D399" onclick="selectColor('emerald', event)"></div>
+         <div class="color-dot ${acc==='red'?'active':''}" style="background:#F87171" onclick="selectColor('red', event)"></div>
        </div>
        <input type="hidden" id="prof-color" value="${acc}">
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3 style="margin-bottom:12px;display:flex;align-items:center;gap:8px"><span>🧩</span> Startseite anpassen</h3>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5;font-weight:500">Wähle aus, welche Widgets auf der Startseite sichtbar sein sollen.</p>
+    <div style="display:grid;grid-template-columns:1fr;gap:10px">
+      ${_widgetToggleRow('meals','Mahlzeiten','Die einzelnen Mahlzeitenkarten auf der Startseite', widgetPrefs.meals)}
+      ${_widgetToggleRow('water','Wasser','Trinkmenge und Schnell-Buttons', widgetPrefs.water)}
+      ${_widgetToggleRow('sleep','Schlaf','Schlafdauer des letzten Schlafs', widgetPrefs.sleep)}
+      ${_widgetToggleRow('activity','Schritte & Aktivität','Schritte und Sporteinträge', widgetPrefs.activity)}
+      ${_widgetToggleRow('weekly','Woche','Wochen-Überblick mit Balken', widgetPrefs.weekly)}
+      ${_widgetToggleRow('weight','Gewicht','Aktueller Gewichtseintrag', widgetPrefs.weight)}
     </div>
   </div>
 
@@ -2299,9 +2550,9 @@ function finishOnboarding(){
 }
 
 // ====================== ADD MODAL ======================
-function openAddModal(){
+function openAddModal(mealType = 'lunch'){
   aiPhoto = null;
-  tempMealType = 'lunch';
+  tempMealType = mealType || 'lunch';
   selectedProduct = null;
   currentAddTab = 'ki';
   _renderAddModal();
