@@ -54,6 +54,7 @@ textarea{resize:none}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @keyframes scaleIn{from{opacity:0;transform:scale(.94) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes successPulse{0%{box-shadow:0 0 0 0 rgba(74,222,128,0.4)}70%{box-shadow:0 0 0 10px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
 .fade-up{animation:fadeUp .28s ease-out forwards}
 .scale-in{animation:scaleIn .3s cubic-bezier(0.175, 0.885, 0.32, 1.15) forwards}
 
@@ -174,7 +175,8 @@ input:checked + .slider:before{transform:translateX(24px);background:#000}
 .chat-list-item.active{border-color:var(--accent);background:var(--accent-dim);box-shadow:0 8px 24px var(--accent-glow);}
 
 /* LOGIN SCREEN */
-.login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;padding:24px;background:var(--bg);color:var(--text);text-align:center;}
+.login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;padding:24px;background:var(--bg);color:var(--text);text-align:center;position:relative;overflow:hidden;}
+.login-screen::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 20%, var(--accent-dim) 0%, transparent 50%),radial-gradient(circle at 70% 80%, var(--accent-dim) 0%, transparent 50%);opacity:0.3;animation:pulse 8s ease-in-out infinite;pointer-events:none;}
 .login-logo{font-size:52px;margin-bottom:12px}
 .login-title{font-size:32px;font-weight:800;margin-bottom:6px;letter-spacing:-0.03em}
 .login-subtitle{color:var(--muted);font-size:15px;margin-bottom:32px;font-weight:500}
@@ -185,6 +187,8 @@ input:checked + .slider:before{transform:translateX(24px);background:#000}
 .login-btn-google:hover{background:#F5F5F5}
 .login-btn-email{background:var(--accent);color:#000}
 .login-btn-email:hover{opacity:0.9}
+.login-btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+.login-btn.success{background:var(--success)!important;color:#000!important;animation:successPulse 0.6s ease-out}
 .login-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--muted);font-size:12px;font-weight:600}
 .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border)}
 .login-input{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:12px 16px;color:var(--text);font-size:14px;width:100%;transition:all 0.2s;font-family:'DM Sans',sans-serif;outline:none}
@@ -217,8 +221,11 @@ input:checked + .slider:before{transform:translateX(24px);background:#000}
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       VERLAUF
     </button>
-    <button class="nav-btn" data-view="profile" onclick="navigate('profile')">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <button class="nav-btn" data-view="profile" onclick="navigate('profile')" id="nav-profile-btn">
+      ${fbUser && !fbUser.isAnonymous && fbUser.photoURL 
+        ? `<img src="${fbUser.photoURL}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;border:2px solid var(--accent)">`
+        : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`
+      }
       PROFIL
     </button>
   </nav>
@@ -345,6 +352,9 @@ function renderLoginScreen() {
         <button class="login-link" id="auth-toggle-link" onclick="toggleAuthMode()">
           Bereits ein Konto? Hier einloggen →
         </button>
+        <button class="login-link" id="auth-forgot-link" onclick="forgotPassword()" style="display:none;color:var(--muted);font-size:12px">
+          Passwort vergessen?
+        </button>
       </div>
     </div>
 
@@ -361,6 +371,7 @@ function toggleAuthMode() {
   const nameField = document.getElementById('auth-name');
   const submitBtn = document.getElementById('auth-submit-btn');
   const toggleLink = document.getElementById('auth-toggle-link');
+  const forgotLink = document.getElementById('auth-forgot-link');
   const errorEl = document.getElementById('login-error');
 
   if (errorEl) errorEl.style.display = 'none';
@@ -369,10 +380,34 @@ function toggleAuthMode() {
     if (nameField) nameField.style.display = 'none';
     if (submitBtn) submitBtn.textContent = 'Einloggen';
     if (toggleLink) toggleLink.textContent = 'Noch kein Konto? Jetzt registrieren →';
+    if (forgotLink) forgotLink.style.display = 'block';
   } else {
     if (nameField) nameField.style.display = 'block';
     if (submitBtn) submitBtn.textContent = 'Konto erstellen';
     if (toggleLink) toggleLink.textContent = 'Bereits ein Konto? Hier einloggen →';
+    if (forgotLink) forgotLink.style.display = 'none';
+  }
+}
+
+async function forgotPassword() {
+  const email = document.getElementById('auth-email')?.value?.trim();
+  if (!email) {
+    showLoginError('Bitte zuerst deine E-Mail-Adresse eingeben.');
+    return;
+  }
+  try {
+    await fbAuth.sendPasswordResetEmail(email);
+    showLoginError(''); // Clear error
+    const errorEl = document.getElementById('login-error');
+    if (errorEl) {
+      errorEl.textContent = '📧 E-Mail zum Zurücksetzen wurde gesendet! Prüfe dein Postfach.';
+      errorEl.style.display = 'block';
+      errorEl.style.background = 'rgba(74, 222, 128, 0.1)';
+      errorEl.style.borderColor = 'var(--success)';
+      errorEl.style.color = 'var(--success)';
+    }
+  } catch (e) {
+    showLoginError('Fehler: ' + (e.message || 'E-Mail konnte nicht gesendet werden.'));
   }
 }
 
@@ -383,6 +418,8 @@ function showLoginError(msg) {
 
 async function loginWithGoogle() {
   if (!fbAuth || !googleProvider) return showLoginError('Firebase nicht initialisiert.');
+  const btn = document.querySelector('.login-btn-google');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span style="display:inline-block;animation:spin 1s linear infinite;margin-right:6px">⏳</span> Verbinde...'; }
   try {
     const oldUID = fbUID;
     const result = await fbAuth.signInWithPopup(googleProvider);
@@ -396,13 +433,15 @@ async function loginWithGoogle() {
     }
 
     syncFromFirebase(fbUID);
-    afterLogin();
+    if (btn) { btn.classList.add('success'); btn.innerHTML = '✓ Angemeldet!'; }
+    setTimeout(() => afterLogin(), 600);
   } catch (e) {
     console.error('Google Login Error:', e);
     if (e.code === 'auth/popup-closed-by-user') return;
     if (e.code === 'auth/popup-blocked') showLoginError('Pop-up wurde blockiert. Bitte erlaube Pop-ups für diese Seite.');
     else showLoginError('Google-Login fehlgeschlagen: ' + e.message);
   }
+  if (btn) { btn.disabled = false; btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Mit Google anmelden`; }
 }
 
 async function handleEmailAuth() {
@@ -439,7 +478,8 @@ async function handleEmailAuth() {
     }
 
     syncFromFirebase(fbUID);
-    afterLogin();
+    if (btn) { btn.classList.add('success'); btn.textContent = '✓ Erfolgreich!'; }
+    setTimeout(() => afterLogin(), 600);
   } catch (e) {
     console.error('Email Auth Error:', e);
     const errorMap = {
@@ -476,12 +516,22 @@ function afterLogin() {
     document.getElementById('app').style.display = 'flex';
     applyTheme(S.profile);
     navigate('dashboard');
+    
+    // Personalisierte Willkommens-Nachricht
+    if (fbUser && !fbUser.isAnonymous && fbUser.displayName) {
+      const hour = new Date().getHours();
+      let greeting = 'Hallo';
+      if (hour < 12) greeting = 'Guten Morgen';
+      else if (hour < 18) greeting = 'Guten Tag';
+      else greeting = 'Guten Abend';
+      setTimeout(() => showToast(`${greeting}, ${fbUser.displayName.split(' ')[0]}! 👋`), 600);
+    }
   }
 }
 
 function logoutUser() {
   if (!fbAuth) return;
-  // Save a flag to know we're logging out (don't auto-login anon)
+  if (!confirm('Möchtest du dich wirklich abmelden? Deine Daten bleiben in der Cloud gespeichert.')) return;
   localStorage.setItem('kalorify_logged_out', 'true');
   fbAuth.signOut().then(() => {
     fbUser = null;
@@ -1384,6 +1434,7 @@ function renderDashboard(el){
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
   <div style="display:flex;align-items:center;gap:8px">
     <input type="date" value="${S.currentDate}" onchange="window.changeDashboardDate(this.value)" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;outline:none;color-scheme:${isLightScheme?'light':'dark'};cursor:pointer">
+    ${fbUser && !fbUser.isAnonymous ? (fbUser.photoURL ? `<img src="${fbUser.photoURL}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);cursor:pointer" onclick="navigate('profile')" title="Angemeldet als ${fbUser.displayName || fbUser.email}">` : `<span style="font-size:16px" title="☁️ Cloud-Sync aktiv">☁️</span>`) : '<span style="font-size:16px" title="📵 Nur lokal">📱</span>'}
   </div>
   ${streak>=2?`<div style="background:var(--accent-dim);border:1px solid var(--accent);border-radius:9999px;padding:6px 12px;font-size:13px;font-weight:700;color:var(--accent)">🔥 ${streak} Tage</div>`:`<div style="color:var(--muted);font-size:13px;font-weight:600">${dateStr}</div>`}
 </div>
@@ -1682,6 +1733,9 @@ function renderProfile(el){
         <div style="font-size:11px;color:var(--dim);margin-top:2px">${fbUser.providerData?.[0]?.providerId === 'google.com' ? '🔗 Google-Konto' : '📧 E-Mail-Konto'}</div>
       </div>
     </div>
+    <div style="background:var(--card2);border-radius:14px;padding:12px;margin-bottom:12px;font-size:12px;color:var(--muted);line-height:1.5">
+      💡 Deine Daten werden automatisch in der Cloud gespeichert und auf all deinen Geräten synchronisiert.
+    </div>
     <button onclick="logoutUser()" class="btn btn-ghost" style="width:100%;font-size:13px;color:var(--fat)">Abmelden</button>
   ` : `
     <div style="background:var(--card2);border-radius:14px;padding:14px;text-align:center;margin-bottom:10px">
@@ -1694,6 +1748,8 @@ function renderProfile(el){
 
 <div class="card" style="margin-top:16px">
   <h3 style="margin-bottom:16px;display:flex;align-items:center;gap:8px"><span>👤</span> Deine Daten</h3>
+  ${fbUser && !fbUser.isAnonymous ? `<div style="background:var(--accent-dim);border-radius:12px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--accent);display:flex;align-items:center;gap:8px">${fbUser.photoURL ? `<img src="${fbUser.photoURL}" style="width:24px;height:24px;border-radius:50%;object-fit:cover">` : '👤'}<span>Angemeldet als <strong>${fbUser.displayName || fbUser.email}</strong></span></div>` : ''}
+  ${fbUser && !fbUser.isAnonymous ? `<div style="background:var(--accent-dim);border-radius:12px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--accent);display:flex;align-items:center;gap:8px">${fbUser.photoURL ? `<img src="${fbUser.photoURL}" style="width:24px;height:24px;border-radius:50%;object-fit:cover">` : '👤'}<span>Angemeldet als <strong>${fbUser.displayName || fbUser.email}</strong></span></div>` : ''}
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
     <div><label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">Geschlecht</label><select id="prof-gender" class="inp"><option value="male" ${p.gender==='male'?'selected':''}>♂️ Männlich</option><option value="female" ${p.gender==='female'?'selected':''}>♀️ Weiblich</option></select></div>
     <div><label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">Alter</label><input type="number" id="prof-age" class="inp" value="${p.age||30}"></div>
@@ -1851,7 +1907,8 @@ function selectDBSource(id){if(!S.profile)return;S.profile.dbSource=id;S.savePro
 
 // ====================== ONBOARDING ======================
 function renderOnboarding(){
-  document.getElementById('onboarding').innerHTML=`<div style="flex:1;display:flex;flex-direction:column;justify-content:center" class="fade-up"><h1 style="font-size:36px;text-align:center;margin-bottom:8px">Willkommen bei Kalorify 👋</h1><p style="text-align:center;color:var(--muted);margin-bottom:40px;font-size:15px;font-weight:500">Erstelle dein Profil – das dauert nur 30 Sekunden.</p><div class="card"><h3 style="margin-bottom:16px">Deine Körperdaten</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">Geschlecht</label><select id="onb-gender" class="inp"><option value="male">♂️ Männlich</option><option value="female">♀️ Weiblich</option></select></div><div><label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">Alter</label><input type="number" id="onb-age" class="inp" value="30"></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px"><div><label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">Gewicht (kg)</label><input type="number" id="onb-weight" class="inp" value="80"></div><div><label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">Größe (cm)</label><input type="number" id="onb-height" class="inp" value="180"></div></div><div style="margin-top:14px"><label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">Aktivitätslevel</label><select id="onb-activity" class="inp">${Object.keys(ACT).map(k=>`<option value="${k}">${ACT[k].label}</option>`).join('')}</select></div><div style="margin-top:14px"><label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">Mein Hauptziel</label><select id="onb-goal" class="inp"><option value="lose">Gewicht Abnehmen</option><option value="maintain" selected>Aktuelles Gewicht halten</option><option value="muscle">Muskulatur aufbauen</option></select></div><button onclick="finishOnboarding()" class="btn" style="width:100%;margin-top:28px;font-size:16px;padding:16px">Profil speichern & Starten ✨</button></div></div>`;
+  const userName = fbUser && !fbUser.isAnonymous && fbUser.displayName ? `, ${fbUser.displayName.split(' ')[0]}` : '';
+  document.getElementById('onboarding').innerHTML=`<div style="flex:1;display:flex;flex-direction:column;justify-content:center" class="fade-up"><div style="text-align:center;margin-bottom:8px;font-size:56px">🍎</div><h1 style="font-size:32px;text-align:center;margin-bottom:8px">Willkommen${userName} 👋</h1><p style="text-align:center;color:var(--muted);margin-bottom:32px;font-size:15px;font-weight:500">Erstelle dein Profil – das dauert nur 30 Sekunden.</p><div style="text-align:center;margin-bottom:24px"><div style="display:inline-flex;gap:8px"><div style="width:8px;height:8px;border-radius:50%;background:var(--accent)"></div><div style="width:8px;height:8px;border-radius:50%;background:var(--border)"></div><div style="width:8px;height:8px;border-radius:50%;background:var(--border)"></div></div></div><div class="card"><h3 style="margin-bottom:16px">Deine Körperdaten</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">Geschlecht</label><select id="onb-gender" class="inp"><option value="male">♂️ Männlich</option><option value="female">♀️ Weiblich</option></select></div><div><label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">Alter</label><input type="number" id="onb-age" class="inp" value="30"></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px"><div><label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">Gewicht (kg)</label><input type="number" id="onb-weight" class="inp" value="80"></div><div><label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">Größe (cm)</label><input type="number" id="onb-height" class="inp" value="180"></div></div><div style="margin-top:14px"><label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">Aktivitätslevel</label><select id="onb-activity" class="inp">${Object.keys(ACT).map(k=>`<option value="${k}">${ACT[k].label}</option>`).join('')}</select></div><div style="margin-top:14px"><label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">Mein Hauptziel</label><select id="onb-goal" class="inp"><option value="lose">Gewicht Abnehmen</option><option value="maintain" selected>Aktuelles Gewicht halten</option><option value="muscle">Muskulatur aufbauen</option></select></div><button onclick="finishOnboarding()" class="btn" style="width:100%;margin-top:28px;font-size:16px;padding:16px">Profil speichern & Starten ✨</button></div></div>`;
 }
 
 function finishOnboarding(){
@@ -2159,5 +2216,5 @@ function boot(){
 boot();
 
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03c8c7cf96a469d',t:'MTc4MDEzMTYyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03ce5b65a74b6ae',t:'MTc4MDEzNTI4NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03c8c7cf96a469d',t:'MTc4MDEzMTYyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03dc6738aa99965',t:'MTc4MDE0NDQ4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
