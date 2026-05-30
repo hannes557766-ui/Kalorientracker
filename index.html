@@ -52,6 +52,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 textarea{resize:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-12px)}}
 @keyframes scaleIn{from{opacity:0;transform:scale(.94) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes successPulse{0%{box-shadow:0 0 0 0 rgba(74,222,128,0.4)}70%{box-shadow:0 0 0 10px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
@@ -1218,7 +1219,7 @@ function calcStreak(){
   }
   if(dayHasActivity(today()))streak=1;
   const check=new Date();
-  for(let i=1;i<=365;i++){
+  for(let i=1;i<=90;i++){
     check.setDate(check.getDate()-1);
     const key=check.toISOString().split('T')[0];
     if(dayHasActivity(key))streak++;
@@ -1583,7 +1584,7 @@ function renderChat(el){
   const remProt=targets.protein-totals.protein;
 
   let suggestionPrompt='';
-  if(remKcal>400&&currentChatot>20){
+  if(remKcal>400&&remProt>20){
     suggestionPrompt=`Schlage mir eine Mahlzeit vor (~${Math.round(remKcal/2)} kcal, ~${Math.round(remProt/2)}g Protein)`;
   } else if(remKcal>100&&remKcal<=400){
     suggestionPrompt=`Kleiner Snack-Vorschlag für ~${remKcal} kcal`;
@@ -1627,11 +1628,12 @@ window.startVoiceChat=function(){
   recognition.onerror=()=>showToast('Fehler bei der Spracherkennung');
 };
 
+function escapeHTML(str){const d=document.createElement('div');d.textContent=str;return d.innerHTML.replace(/\n/g,'<br>');}
 function renderChatMessages(){
   const container=document.getElementById('chat-msgs');
   if(!container)return;
   const msgs=getCurrentMessages();
-  container.innerHTML=msgs.map((msg,i)=>`<div class="chat-bubble ${msg.role==='user'?'user':'bot'} ${i===msgs.length-1?'scale-in':''}">${msg.text.replace(/\n/g,'<br>')}</div>`).join('');
+  container.innerHTML=msgs.map((msg,i)=>`<div class="chat-bubble ${msg.role==='user'?'user':'bot'} ${i===msgs.length-1?'scale-in':''}">${escapeHTML(msg.text)}</div>`).join('');
   container.scrollTop=container.scrollHeight;
 }
 
@@ -1748,7 +1750,6 @@ function renderProfile(el){
 
 <div class="card" style="margin-top:16px">
   <h3 style="margin-bottom:16px;display:flex;align-items:center;gap:8px"><span>👤</span> Deine Daten</h3>
-  ${fbUser && !fbUser.isAnonymous ? `<div style="background:var(--accent-dim);border-radius:12px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--accent);display:flex;align-items:center;gap:8px">${fbUser.photoURL ? `<img src="${fbUser.photoURL}" style="width:24px;height:24px;border-radius:50%;object-fit:cover">` : '👤'}<span>Angemeldet als <strong>${fbUser.displayName || fbUser.email}</strong></span></div>` : ''}
   ${fbUser && !fbUser.isAnonymous ? `<div style="background:var(--accent-dim);border-radius:12px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--accent);display:flex;align-items:center;gap:8px">${fbUser.photoURL ? `<img src="${fbUser.photoURL}" style="width:24px;height:24px;border-radius:50%;object-fit:cover">` : '👤'}<span>Angemeldet als <strong>${fbUser.displayName || fbUser.email}</strong></span></div>` : ''}
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
     <div><label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">Geschlecht</label><select id="prof-gender" class="inp"><option value="male" ${p.gender==='male'?'selected':''}>♂️ Männlich</option><option value="female" ${p.gender==='female'?'selected':''}>♀️ Weiblich</option></select></div>
@@ -1930,13 +1931,12 @@ function switchAddTab(tab){
   currentAddTab=tab;
   document.querySelectorAll('.add-tab').forEach((b,i)=>{const tabs=['ki','fav','suche','barcode','rezepte','manuell'];b.classList.toggle('active',tabs[i]===tab);});
   const cont=document.getElementById('add-tab-content');
-  if(cont){cont.style.opacity='0';setTimeout(()=>{_renderAddTabContent();cont.style.opacity='1';},120);}
+  if(cont){_renderAddTabContent();}
   else _renderAddTabContent();
 }
 
 function _renderAddTabContent(){
   const el=document.getElementById('add-tab-content');if(!el)return;
-  el.style.transition='opacity 0.2s';
   if(currentAddTab==='ki')el.innerHTML=_buildKITabHTML();
   else if(currentAddTab==='fav')el.innerHTML=_buildFavTabHTML();
   else if(currentAddTab==='suche')el.innerHTML=_buildSucheTabHTML();
@@ -2090,7 +2090,7 @@ function showAmountSelector(product){
 window.saveAsFavorite=function(){if(!selectedProduct)return;S.saveFavorite(selectedProduct);showToast('Favorit gespeichert! ⭐');};
 function setAmountChip(grams,idx){document.querySelectorAll('.amount-chip').forEach((el,i)=>el.classList.toggle('active',i===idx));const inp=document.getElementById('amount-grams-inp');if(inp){inp.value=grams;updateMacroPreview();}}
 function updateMacroPreview(){const inp=document.getElementById('amount-grams-inp');if(!inp||!selectedProduct)return;const grams=parseFloat(inp.value)||0;const n=calcForGrams(selectedProduct,grams);const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};set('prev-kcal',n.calories);set('prev-prot',n.protein+'g');set('prev-carbs',n.carbs+'g');set('prev-fat',n.fat+'g');const chipGrams=(window._amountChips||[]).map(c=>c.grams);const matched=chipGrams.indexOf(grams);document.querySelectorAll('.amount-chip').forEach((el,i)=>el.classList.toggle('active',i===matched));}
-function confirmAddDBMeal(){if(!selectedProduct)return;const grams=parseFloat(document.getElementById('amount-grams-inp')?.value)||100;if(grams<=0)return showToast('Mehr als 0g eingeben.');const n=calcForGrams(selectedProduct,grams);const name=getProductName(selectedProduct);const brand=selectedProduct.brands?' – '+selectedProduct.brands.split(',')[0].trim():'';addMeal({name:name+(brand&&brand.length<24?brand:''),calories:n.calories,protein:n.protein,carbs:n.carbs,fat:n.fat,mealType:tempMealType});closeModal();}
+function confirmAddDBMeal(){if(!selectedProduct)return;const grams=parseFloat(document.getElementById('amount-grams-inp')?.value)||100;if(grams<=0)return showToast('Mehr als 0g eingeben.');const n=calcForGrams(selectedProduct,grams);const name=getProductName(selectedProduct);const brandRaw=selectedProduct.brands?selectedProduct.brands.split(',')[0].trim():'';const brand=brandRaw&&brandRaw!=='USDA'&&brandRaw.length<24?' – '+brandRaw:'';addMeal({name:name+brand,calories:n.calories,protein:n.protein,carbs:n.carbs,fat:n.fat,mealType:tempMealType});closeModal();}
 function backToAddModal(){stopBarcodeScanner();selectedProduct=null;_renderAddModal();if(currentAddTab==='ki')setTimeout(_renderMealPills,50);}
 
 // ====================== REZEPTE ======================
@@ -2123,7 +2123,7 @@ function addRecipeMeal(){if(!_currentRecipe)return;const kcal=parseInt(document.
 
 // ====================== MODALS & TOAST ======================
 function closeModal(){
-  stopBarcodeScanner();stopCamera();aiPhoto=null;selectedProduct=null;
+  stopBarcodeScanner();stopCamera();aiPhoto=null;selectedProduct=null;_currentRecipe=null;currentBarcodeSubTab='camera';
   const overlay=document.querySelector('.modal-overlay');
   if(overlay){overlay.style.opacity='0';const box=document.querySelector('.modal-box');if(box)box.style.transform='translateY(100px)';setTimeout(()=>{document.getElementById('modal-container').innerHTML='';},250);}
   else document.getElementById('modal-container').innerHTML='';
@@ -2132,7 +2132,7 @@ function closeModal(){
 function showToast(msg){
   const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';
   t.style.animation='none';void t.offsetWidth;t.style.animation='fadeUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2)';
-  clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>{t.style.animation='fadeUp 0.25s reverse forwards';setTimeout(()=>{t.style.display='none';},250);},2800);
+  clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>{t.style.animation='fadeOut 0.25s ease-out forwards';setTimeout(()=>{t.style.display='none';t.style.animation='';},250);},2800);
 }
 
 // ====================== MEAL MANAGEMENT ======================
