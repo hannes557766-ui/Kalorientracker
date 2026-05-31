@@ -1440,7 +1440,7 @@ function renderDashboard(el){
         </div>`:''}
       </div>
     </div>`;
-  }).join(''):'';```
+  }).join(''):'';
 
   const activityWidgetHTML=widgetPrefs.activity?`<div class="card" style="margin-top:12px;padding:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-weight:700;font-size:13px">🏃 Schritte & Aktivität</div><button onclick="addActivityAI()" style="background:var(--accent-dim);color:var(--accent);border:none;padding:6px 12px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer">+ Sport (KI)</button></div><div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:10px 0;border-bottom:1px solid var(--border);margin-bottom:8px"><span style="color:var(--muted);font-weight:600">👟 Schritte heute:</span><span style="font-weight:800;cursor:pointer;color:var(--accent);padding:4px 10px;background:var(--card2);border-radius:10px" onclick="window.updateSteps()">${log.steps||0} <span style="font-size:14px;margin-left:4px">✎</span></span></div>${(log.activities||[]).map(a=>`<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;color:var(--muted);padding:4px 0"><span style="font-weight:600">🏃 ${a.name}</span><span style="color:var(--success);font-weight:700">+${a.kcal} kcal <button onclick="window.removeActivity('${a.id}')" style="background:none;border:none;color:var(--fat);font-size:16px;cursor:pointer;margin-left:6px;padding:0 4px">×</button></span></div>`).join('')}</div>`:'';
 
