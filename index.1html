@@ -1399,47 +1399,48 @@ function renderDashboard(el){
     const meals=groupedMeals[type.id]||[];
     const target=mealTargetForType(type.id,targets.calories);
     const consumed=meals.reduce((s,m)=>s+(m.calories||0),0);
-    const mealProtein=meals.reduce((s,m)=>s+(m.protein||0),0);
-    const mealCarbs=meals.reduce((s,m)=>s+(m.carbs||0),0);
-    const mealFat=meals.reduce((s,m)=>s+(m.fat||0),0);
-    const remainingMeal=target-consumed;
     const isExpanded=expandedMeals[type.id]===true;
-    const openText=meals.length?`${consumed} / ${target} kcal`:`Noch nichts eingetragen • Ziel ${target} kcal`;
+    const progress=target>0?Math.min(100,Math.round((consumed/target)*100)):0;
+    const remaining=target-consumed;
+
     return`<div class="card" style="margin-top:12px;padding:16px 16px 14px;border-radius:24px">
-      <div onclick="toggleDashboardMeal('${type.id}')" style="display:flex;align-items:center;gap:14px;cursor:pointer;user-select:none">
-        <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
-            <div style="min-width:0">
-              <div style="display:flex;align-items:center;gap:8px;min-width:0">
-                
-                <div style="font-size:15px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${type.emoji} ${type.label}</div>
-              </div>
-              <div style="font-size:12px;color:var(--muted);margin-top:4px;font-weight:600">${openText}${meals.length?`<span style="color:${remainingMeal>=0?'var(--success)':'var(--fat)'};margin-left:4px">· ${remainingMeal>=0?`${remainingMeal} kcal frei`:`${Math.abs(remainingMeal)} kcal drüber`}</span>`:''}
-              </div>
-              ${meals.length?`<div style="display:flex;gap:8px;margin-top:5px;font-size:10px;font-weight:700">
-                <span style="color:var(--protein)">⚫ ${mealProtein}g</span>
-                <span style="color:var(--carbs)">⚫ ${mealCarbs}g</span>
-                <span style="color:var(--fat)">⚫ ${mealFat}g</span>
-              </div>`:''}
+      <div onclick="toggleDashboardMeal('${type.id}')" style="cursor:pointer;user-select:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px">
+              ${type.emoji} ${type.label}
             </div>
-            <div style="display:flex;gap:8px;flex-shrink:0;align-items:center">
-              <button onclick="event.stopPropagation();window.copyYesterday('${type.id}')" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer">♻️</button>
-              <button onclick="event.stopPropagation();openDashboardAdd('${type.id}')" style="width:34px;height:34px;border-radius:12px;border:none;background:var(--accent);color:#000;font-size:20px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px var(--accent-glow)">+</button>
+            
+            <div style="margin-top:10px">
+              <div style="height:6px;background:var(--border);border-radius:999px;overflow:hidden">
+                <div style="height:100%;width:${progress}%;background:var(--accent);border-radius:999px;transition:width .4s ease"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:11px;font-weight:600">
+                <span style="color:var(--muted)">${consumed} / ${target} kcal</span>
+                <span style="color:${remaining>=0?'var(--success)':'var(--fat)'}">
+                  ${remaining>=0?`${remaining} kcal frei`:`${Math.abs(remaining)} kcal drüber`}
+                </span>
+              </div>
             </div>
           </div>
+
+          <div style="display:flex;gap:8px;flex-shrink:0;align-items:center">
+            <button onclick="event.stopPropagation();window.copyYesterday('${type.id}')" style="background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:6px 10px;font-size:11px;font-weight:800;cursor:pointer">♻️</button>
+            <button onclick="event.stopPropagation();openDashboardAdd('${type.id}')" style="width:34px;height:34px;border-radius:12px;border:none;background:var(--accent);color:#000;font-size:20px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px var(--accent-glow)">+</button>
+          </div>
         </div>
-        
       </div>
+
       <div style="margin-top:${isExpanded?14:0}px;max-height:${isExpanded?'2000px':'0px'};overflow:hidden;transition:max-height .28s ease, margin-top .28s ease">
         ${meals.length?mealContent(meals):'<div style="padding:12px 2px 4px;color:var(--muted);font-size:13px">Noch keine Einträge.</div>'}
         ${meals.length>0?`<div style="margin-top:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:4px 0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;color:var(--dim)">
-          <span style="color:var(--protein);background:rgba(96,165,250,0.1);padding:3px 8px;border-radius:6px">⚫ ${mealProtein}g Protein</span>
-          <span style="color:var(--carbs);background:rgba(251,191,36,0.1);padding:3px 8px;border-radius:6px">⚫ ${mealCarbs}g KH</span>
-          <span style="color:var(--fat);background:rgba(248,113,113,0.1);padding:3px 8px;border-radius:6px">⚫ ${mealFat}g Fett</span>
+          <span style="color:var(--protein);background:rgba(96,165,250,0.1);padding:3px 8px;border-radius:6px">⚫ ${meals.reduce((s,m)=>s+(m.protein||0),0)}g Protein</span>
+          <span style="color:var(--carbs);background:rgba(251,191,36,0.1);padding:3px 8px;border-radius:6px">⚫ ${meals.reduce((s,m)=>s+(m.carbs||0),0)}g KH</span>
+          <span style="color:var(--fat);background:rgba(248,113,113,0.1);padding:3px 8px;border-radius:6px">⚫ ${meals.reduce((s,m)=>s+(m.fat||0),0)}g Fett</span>
         </div>`:''}
       </div>
     </div>`;
-  }).join(''):'';
+  }).join(''):'';```
 
   const activityWidgetHTML=widgetPrefs.activity?`<div class="card" style="margin-top:12px;padding:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-weight:700;font-size:13px">🏃 Schritte & Aktivität</div><button onclick="addActivityAI()" style="background:var(--accent-dim);color:var(--accent);border:none;padding:6px 12px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer">+ Sport (KI)</button></div><div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:10px 0;border-bottom:1px solid var(--border);margin-bottom:8px"><span style="color:var(--muted);font-weight:600">👟 Schritte heute:</span><span style="font-weight:800;cursor:pointer;color:var(--accent);padding:4px 10px;background:var(--card2);border-radius:10px" onclick="window.updateSteps()">${log.steps||0} <span style="font-size:14px;margin-left:4px">✎</span></span></div>${(log.activities||[]).map(a=>`<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;color:var(--muted);padding:4px 0"><span style="font-weight:600">🏃 ${a.name}</span><span style="color:var(--success);font-weight:700">+${a.kcal} kcal <button onclick="window.removeActivity('${a.id}')" style="background:none;border:none;color:var(--fat);font-size:16px;cursor:pointer;margin-left:6px;padding:0 4px">×</button></span></div>`).join('')}</div>`:'';
 
