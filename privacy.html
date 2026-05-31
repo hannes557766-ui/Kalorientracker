@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Datenschutz • Kalorify</title>
+  <meta name="robots" content="noindex,nofollow">
+  <style>
+    :root{--bg:#F8F9FA;--card:#fff;--text:#212529;--muted:#6C757D;--accent:#A3D65C;--border:#E9ECEF}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.6}
+    main{max-width:760px;margin:0 auto;padding:32px 18px 56px}
+    section{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:22px;margin:14px 0;box-shadow:0 8px 30px rgba(0,0,0,.04)}
+    h1{font-size:34px;letter-spacing:-.04em;margin:0 0 8px}h2{font-size:20px;margin:0 0 10px}p,li{color:var(--muted)}a{color:#5B8E1D;font-weight:700}.badge{display:inline-block;background:rgba(163,214,92,.18);color:#4f7f18;border-radius:999px;padding:6px 12px;font-weight:800;font-size:12px;margin-bottom:16px}
+    ul{padding-left:22px}.small{font-size:13px;color:var(--muted)}
+  </style>
+</head>
+<body>
+<main>
+  <div class="badge">Kalorify</div>
+  <h1>Datenschutz</h1>
+  <p class="small">Stand: 31. Mai 2026</p>
+
+  <section>
+    <h2>1. Kurzfassung</h2>
+    <p>Kalorify verarbeitet Ernährungs-, Aktivitäts- und Profildaten, damit du Kalorien, Makros, Rezepte und Fortschritt tracken kannst. Die App speichert Daten entweder lokal in deinem Browser oder, wenn du angemeldet bist, zusätzlich in Firebase zur Synchronisierung zwischen Geräten.</p>
+  </section>
+
+  <section>
+    <h2>2. Welche Daten können gespeichert werden?</h2>
+    <ul>
+      <li>Profildaten wie Alter, Geschlecht, Größe, Gewicht, Aktivitätslevel und Ziel.</li>
+      <li>Tagebucheinträge wie Mahlzeiten, Kalorien, Protein, Kohlenhydrate, Fett, Wasser, Schlaf, Schritte und Aktivitäten.</li>
+      <li>Rezepte inklusive Zutaten, Zubereitung, Makros, Tags und optional Bildern.</li>
+      <li>Chatverläufe mit dem Coach, wenn du die Coach-Funktion nutzt.</li>
+      <li>Einstellungen wie Theme, Akzentfarbe, Startseiten-Widgets und Datenbank-/KI-Anbieter.</li>
+      <li>Optional eingegebene API-Keys, falls du eigene KI- oder Datenbankzugänge nutzt.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>3. Lokale Speicherung</h2>
+    <p>Ohne Anmeldung werden Daten im Browser deines Geräts gespeichert, hauptsächlich über LocalStorage und PWA-Cache. Wenn du Browserdaten löschst oder die PWA entfernst, können lokale Daten verloren gehen.</p>
+  </section>
+
+  <section>
+    <h2>4. Cloud-Synchronisierung</h2>
+    <p>Wenn du dich anmeldest, werden Daten über Firebase Authentication und Firebase Realtime Database synchronisiert. Dadurch kannst du deine Daten auf mehreren Geräten nutzen. Firebase ist ein Dienst von Google.</p>
+  </section>
+
+  <section>
+    <h2>5. KI-Funktionen und externe APIs</h2>
+    <p>Wenn du KI-Funktionen nutzt, können eingegebene Texte, Bilder oder Rezeptbeschreibungen an den ausgewählten KI-Anbieter gesendet werden. Je nach Einstellung können Anbieter wie Claude, Gemini, Groq oder Mistral verwendet werden. Wenn du eigene API-Keys einträgst, werden diese in deiner App-Speicherung hinterlegt.</p>
+  </section>
+
+  <section>
+    <h2>6. Food-Datenbanken und Barcode</h2>
+    <p>Bei der Lebensmittelsuche oder beim Barcode-Scan können Suchbegriffe oder Barcodes an externe Lebensmitteldatenbanken wie Open Food Facts oder USDA gesendet werden. Diese Dienste liefern Nährwertdaten zurück.</p>
+  </section>
+
+  <section>
+    <h2>7. Kamera, Mikrofon und Health-Daten</h2>
+    <p>Die Kamera wird nur genutzt, wenn du aktiv Fotoanalyse oder Barcode-Scan startest. Das Mikrofon wird nur genutzt, wenn du Spracheingabe startest. Apple-Health-Daten werden nicht direkt durch die PWA gelesen. Schritte können optional über Apple Kurzbefehle per URL-Parameter an die App übergeben werden.</p>
+  </section>
+
+  <section>
+    <h2>8. Export, Import und Löschen</h2>
+    <p>Du kannst deine Daten in der App exportieren und wieder importieren. Du kannst lokale Daten durch Löschen der Browser-/PWA-Daten entfernen. Wenn du Cloud-Sync nutzt, sollten Cloud-Daten zusätzlich in Firebase bzw. über die App-Funktionen gelöscht werden, sofern verfügbar.</p>
+  </section>
+
+  <section>
+    <h2>9. Medizinischer Hinweis</h2>
+    <p>Kalorify ist kein Medizinprodukt und ersetzt keine professionelle medizinische Beratung. Nährwerte, KI-Antworten und Rezeptberechnungen können Schätzungen enthalten.</p>
+  </section>
+
+  <section>
+    <h2>10. Kontakt</h2>
+    <p>Dieses Projekt wird privat/experimentell betrieben. Wenn du Feedback oder Datenschutzfragen hast, nutze den Kontaktweg des GitHub-Projekts oder des Betreibers.</p>
+  </section>
+
+  <p><a href="./">Zurück zur App</a></p>
+</main>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a047b2c05fceb173',t:'MTc4MDI0ODU0MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
