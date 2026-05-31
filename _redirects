@@ -1,0 +1,5 @@
+# Cloudflare Pages redirects for Kalorify PWA
+# Any unknown app route should return the app shell.
+# This keeps installed PWAs and future deep links from showing a 404.
+
+/* /index.html 200
