@@ -103,10 +103,10 @@ textarea{resize:none}
 .compact-mode .btn{padding:12px 16px;border-radius:12px;}
 .compact-mode h1{font-size:24px;margin-bottom:12px;}
 
-.color-dot{width:30px;height:30px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.2);box-shadow:0 4px 10px rgba(0,0,0,0.15);}
+.color-dot{width:34px;height:34px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.2);box-shadow:0 4px 10px rgba(0,0,0,0.15);}
 .color-dot:active{transform:scale(0.9);}
 .color-dot.active{border-color:var(--text);transform:scale(1.15);}
-.accent-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;justify-items:center;max-width:340px;margin:0 auto;}
+.accent-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;justify-items:center;max-width:320px;margin:0 auto;}
 
 .water-btn{background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:12px 0;font-size:13px;font-weight:700;cursor:pointer;color:var(--text);flex:1;text-align:center;transition:background-color .12s ease,border-color .12s ease}
 .water-btn:active{transform:scale(0.94);background:var(--accent-dim);border-color:var(--accent)}
@@ -190,14 +190,22 @@ input:checked + .slider:before{transform:translateX(24px);background:#000}
 .torch-btn.active{background:var(--accent);color:#000;border-color:var(--accent);box-shadow:0 0 16px var(--accent-glow)}
 
 /* === CHAT PHOTO PREVIEW === */
-.chat-photo-preview{position:relative;margin-top:8px}
-.chat-photo-preview img{max-width:200px;max-height:200px;border-radius:16px;object-fit:cover;border:2px solid var(--accent);box-shadow:0 4px 16px rgba(0,0,0,0.2)}
-.chat-photo-preview .remove-btn{position:absolute;top:-8px;right:-8px;width:26px;height:26px;border-radius:50%;background:var(--fat);color:#fff;border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
-.chat-photo-preview .remove-btn:active{transform:scale(.85)}
-.chat-photo-inp-wrap{position:relative}
-.chat-photo-btn{background:var(--card2);border:none;color:var(--accent);width:46px;height:46px;border-radius:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background-color .12s}
+/* Multi-Photo Vorschau-Grid */
+.chat-photos-bar{display:flex;gap:8px;margin-top:10px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.chat-photos-bar::-webkit-scrollbar{display:none}
+.chat-photo-thumb{position:relative;width:68px;height:68px;border-radius:16px;overflow:hidden;flex-shrink:0;cursor:default;box-shadow:0 4px 12px rgba(0,0,0,0.15);border:2px solid var(--accent);animation:scaleIn .25s cubic-bezier(0.175,0.885,0.32,1.4)}
+.chat-photo-thumb img{width:100%;height:100%;object-fit:cover}
+.chat-photo-thumb .remove-btn{position:absolute;top:-7px;right:-7px;width:24px;height:24px;border-radius:50%;background:var(--fat);color:#fff;border:none;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);line-height:1}
+.chat-photo-thumb .remove-btn:active{transform:scale(.85)}
+.chat-photo-thumb .idx-badge{position:absolute;bottom:3px;left:3px;background:rgba(0,0,0,0.55);color:#fff;font-size:10px;font-weight:800;border-radius:6px;padding:1px 5px;backdrop-filter:blur(4px)}
+/* Foto-Button mit Counter */
+.chat-photo-btn{background:var(--card2);border:none;color:var(--accent);width:46px;height:46px;border-radius:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background-color .12s,transform .1s;position:relative}
 .chat-photo-btn:active{transform:scale(.9)}
 .chat-photo-btn.has-photo{background:var(--accent-dim);border:1px solid var(--accent)}
+.chat-photo-btn .count-badge{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;border-radius:10px;background:var(--accent);color:#000;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 5px;box-shadow:0 2px 6px rgba(0,0,0,0.25);border:2px solid var(--bg)}
+/* Bilder im Chat-Verlauf */
+.chat-msg-images{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.chat-msg-images img{width:140px;height:140px;object-fit:cover;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,0.12)}
 
 .chat-list-item{display:flex;align-items:center;justify-content:space-between;padding:16px;background:var(--card);border-radius:20px;margin-bottom:12px;cursor:pointer;border:2px solid transparent;transition:background-color .12s ease,border-color .12s ease;box-shadow:var(--shadow);}
 .chat-list-item:active{transform:scale(0.98);background:var(--card2);}
@@ -291,517 +299,11 @@ input:checked + .slider:before{transform:translateX(24px);background:#000}
 .cook-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 18px 26px}.cook-timer{background:var(--accent-dim);color:var(--accent);border-radius:20px;padding:14px;font-weight:900;text-align:center;margin-top:10px;border:0;cursor:pointer}
 
 
-/* ============================================================
-   ╔══════════════════════════════════════════════════════════╗
-   ║          LIQUID GLASS MODE — iOS 26 / visionOS           ║
-   ║   Refraktion · Spekulare Highlights · Chromatische       ║
-   ║   Aberration · Adaptive Tiefe · Lebendiger Hintergrund   ║
-   ╚══════════════════════════════════════════════════════════╝
-   ============================================================ */
-
-/* --- Adaptive Variablen pro Farbschema --- */
-body.lg[data-lg-scheme="light"]{
-  --lg-bg-1: rgba(255,255,255,0.42);
-  --lg-bg-2: rgba(255,255,255,0.28);
-  --lg-border: rgba(255,255,255,0.7);
-  --lg-border-soft: rgba(255,255,255,0.35);
-  --lg-specular: rgba(255,255,255,0.55);
-  --lg-specular-2: rgba(255,255,255,0.18);
-  --lg-shadow: 0 12px 40px rgba(0,0,0,0.10), 0 4px 14px rgba(0,0,0,0.05);
-  --lg-inset: inset 0 1.5px 1px rgba(255,255,255,0.7), inset 0 -1px 1px rgba(0,0,0,0.03), inset 0 0 0 0.5px rgba(255,255,255,0.4);
-  --lg-edge-glow: 0 0 0 1px rgba(255,255,255,0.5);
-  --lg-ambient-opacity: 0.9;
-}
-body.lg[data-lg-scheme="dark"]{
-  --lg-bg-1: rgba(45,45,65,0.38);
-  --lg-bg-2: rgba(30,30,50,0.30);
-  --lg-border: rgba(255,255,255,0.16);
-  --lg-border-soft: rgba(255,255,255,0.08);
-  --lg-specular: rgba(255,255,255,0.14);
-  --lg-specular-2: rgba(255,255,255,0.05);
-  --lg-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 4px 14px rgba(0,0,0,0.2);
-  --lg-inset: inset 0 1.5px 1px rgba(255,255,255,0.18), inset 0 -1px 2px rgba(0,0,0,0.25), inset 0 0 0 0.5px rgba(255,255,255,0.1);
-  --lg-edge-glow: 0 0 0 1px rgba(255,255,255,0.12);
-  --lg-ambient-opacity: 0.7;
-}
-
-/* --- Transparenter App-Hintergrund --- */
-body.lg #app{ background:transparent !important; }
-
-/* --- Lebendiger animierter Hintergrund (macht das Glas sichtbar) --- */
-body.lg #app::before{
-  content:'';
-  position:fixed;
-  inset:-15%;
-  z-index:0;
-  pointer-events:none;
-  background:
-    radial-gradient(ellipse 55% 45% at 12% 18%, var(--accent-glow) 0%, transparent 60%),
-    radial-gradient(ellipse 45% 55% at 88% 82%, color-mix(in srgb, var(--protein) 32%, transparent) 0%, transparent 55%),
-    radial-gradient(ellipse 65% 35% at 50% 95%, color-mix(in srgb, var(--accent) 18%, transparent) 0%, transparent 50%),
-    radial-gradient(ellipse 40% 50% at 75% 25%, color-mix(in srgb, var(--carbs) 20%, transparent) 0%, transparent 55%);
-  animation:lgAmbient 32s ease-in-out infinite;
-  filter:blur(50px);
-  opacity:var(--lg-ambient-opacity);
-}
-body.lg[data-lg-scheme="dark"] #app::before{ filter:blur(60px) brightness(0.7); }
-@keyframes lgAmbient{
-  0%,100%{ transform:translate(0,0) rotate(0deg) scale(1); }
-  20%{ transform:translate(-3%,2%) rotate(1.5deg) scale(1.04); }
-  40%{ transform:translate(2%,-3%) rotate(-1deg) scale(1.02); }
-  60%{ transform:translate(-2%,-2%) rotate(1deg) scale(1.05); }
-  80%{ transform:translate(3%,2%) rotate(-1.5deg) scale(1.03); }
-}
-body.lg #views{ position:relative; z-index:1; }
-body.lg #nav{ z-index:50; }
-
-/* ═══════════════════ GLAS-KERN (Cards) ═══════════════════ */
-body.lg .card{
-  background:linear-gradient(135deg, var(--lg-bg-1) 0%, var(--lg-bg-2) 100%) !important;
-  backdrop-filter:url(#lg-refract) blur(22px) saturate(1.9) brightness(1.06);
-  -webkit-backdrop-filter:blur(22px) saturate(1.9) brightness(1.06);
-  border:1px solid var(--lg-border) !important;
-  box-shadow:var(--lg-shadow), var(--lg-inset) !important;
-  position:relative;
-  overflow:hidden;
-}
-/* Specular Highlight — diagonaler Glanz wie von oben-links kommendes Licht */
-body.lg .card::before{
-  content:'';
-  position:absolute;
-  top:0; left:0; right:0;
-  height:60%;
-  border-radius:inherit;
-  background:linear-gradient(160deg, var(--lg-specular) 0%, var(--lg-specular-2) 35%, transparent 70%);
-  pointer-events:none;
-  z-index:0;
-  mix-blend-mode:overlay;
-}
-/* Zweite Highlight-Schicht — subtiler Eckenglanz */
-body.lg .card::after{
-  content:'';
-  position:absolute;
-  inset:0;
-  border-radius:inherit;
-  background:radial-gradient(ellipse 80% 50% at 50% 0%, var(--lg-specular-2), transparent 60%);
-  pointer-events:none;
-  z-index:0;
-}
-body.lg .card > *{ position:relative; z-index:1; }
-/* Verschachtelte Cards dunkler */
-body.lg .card .card{
-  background:linear-gradient(135deg, var(--lg-bg-2) 0%, color-mix(in srgb, var(--card2) 50%, transparent) 100%) !important;
-}
-/* Haupt-Dashboard-Card */
-body.lg .dash-main-card{
-  background:linear-gradient(135deg, var(--lg-bg-1) 0%, var(--lg-bg-2) 100%) !important;
-}
-
-/* ═══════════════════ MINI-CARDS (Dashboard Widgets) ═══════════════════ */
-body.lg .dash-mini-card{
-  background:linear-gradient(135deg, var(--lg-bg-1) 0%, var(--lg-bg-2) 100%) !important;
-  backdrop-filter:url(#lg-refract-sm) blur(16px) saturate(1.8);
-  -webkit-backdrop-filter:blur(16px) saturate(1.8);
-  border:1px solid var(--lg-border) !important;
-  box-shadow:var(--lg-shadow), var(--lg-inset) !important;
-  position:relative;
-  overflow:hidden;
-}
-body.lg .dash-mini-card::before{
-  content:'';
-  position:absolute;
-  top:0; left:0; right:0;
-  height:55%;
-  border-radius:inherit;
-  background:linear-gradient(160deg, var(--lg-specular) 0%, transparent 60%);
-  pointer-events:none;
-  mix-blend-mode:overlay;
-}
-body.lg .dash-activity-strip{
-  background:linear-gradient(135deg, var(--lg-bg-2) 0%, color-mix(in srgb, var(--card) 40%, transparent) 100%) !important;
-  backdrop-filter:blur(14px) saturate(1.6);
-  -webkit-backdrop-filter:blur(14px) saturate(1.6);
-  border:1px solid var(--lg-border-soft) !important;
-}
-
-/* ═══════════════════ NAVIGATION (Bottom Bar) ═══════════════════ */
-body.lg #nav{
-  background:linear-gradient(180deg, var(--lg-bg-1) 0%, var(--lg-bg-2) 100%) !important;
-  backdrop-filter:url(#lg-refract) blur(30px) saturate(2) brightness(1.08);
-  -webkit-backdrop-filter:blur(30px) saturate(2) brightness(1.08);
-  border-top:1px solid var(--lg-border) !important;
-  box-shadow:0 -8px 32px rgba(0,0,0,0.08), var(--lg-inset) !important;
-  position:relative;
-}
-body.lg #nav::before{
-  content:'';
-  position:absolute;
-  top:0; left:10%; right:10%;
-  height:50%;
-  background:linear-gradient(180deg, var(--lg-specular) 0%, transparent 80%);
-  pointer-events:none;
-  mix-blend-mode:overlay;
-}
-/* Add-Button als glühende Glas-Kugel */
-body.lg #add-fab{
-  background:linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 70%, #fff) 100%) !important;
-  backdrop-filter:blur(10px) saturate(1.8);
-  -webkit-backdrop-filter:blur(10px) saturate(1.8);
-  box-shadow:0 8px 32px var(--accent-glow), 0 0 0 1px rgba(255,255,255,0.3), inset 0 1px 2px rgba(255,255,255,0.6), inset 0 -2px 4px rgba(0,0,0,0.1) !important;
-  border:1px solid rgba(255,255,255,0.4) !important;
-}
-body.lg #add-fab::before{
-  content:'';
-  position:absolute;
-  inset:2px;
-  border-radius:inherit;
-  background:linear-gradient(160deg, rgba(255,255,255,0.4) 0%, transparent 50%);
-  pointer-events:none;
-}
-
-/* ═══════════════════ BUTTONS ═══════════════════ */
-body.lg .btn{
-  background:linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 75%, #fff) 100%) !important;
-  box-shadow:0 6px 20px var(--accent-glow), inset 0 1px 1px rgba(255,255,255,0.5), inset 0 -1px 2px rgba(0,0,0,0.08) !important;
-  border:1px solid rgba(255,255,255,0.25) !important;
-  position:relative;
-  overflow:hidden;
-}
-body.lg .btn::before{
-  content:'';
-  position:absolute;
-  top:0; left:0; right:0;
-  height:50%;
-  border-radius:inherit;
-  background:linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%);
-  pointer-events:none;
-  mix-blend-mode:overlay;
-}
-body.lg .btn-ghost{
-  background:linear-gradient(135deg, var(--lg-bg-1) 0%, var(--lg-bg-2) 100%) !important;
-  backdrop-filter:blur(16px) saturate(1.7);
-  -webkit-backdrop-filter:blur(16px) saturate(1.7);
-  border:1px solid var(--lg-border) !important;
-  box-shadow:var(--lg-inset), 0 4px 16px rgba(0,0,0,0.06) !important;
-  position:relative;
-  overflow:hidden;
-}
-body.lg .btn-ghost::before{
-  content:'';
-  position:absolute;
-  top:0; left:0; right:0;
-  height:55%;
-  border-radius:inherit;
-  background:linear-gradient(160deg, var(--lg-specular) 0%, transparent 60%);
-  pointer-events:none;
-  mix-blend-mode:overlay;
-}
-
-/* ═══════════════════ INPUTS / FORM ═══════════════════ */
-body.lg .inp{
-  background:linear-gradient(135deg, color-mix(in srgb, var(--card2) 50%, transparent) 0%, color-mix(in srgb, var(--card2) 30%, transparent) 100%) !important;
-  backdrop-filter:blur(12px) saturate(1.5);
-  -webkit-backdrop-filter:blur(12px) saturate(1.5);
-  border:1px solid var(--lg-border-soft) !important;
-  box-shadow:inset 0 1px 2px rgba(0,0,0,0.04), 0 1px 0 rgba(255,255,255,0.3) !important;
-  position:relative;
-}
-body.lg .inp:focus{
-  border-color:var(--accent) !important;
-  box-shadow:0 0 0 3px var(--accent-dim), inset 0 1px 2px rgba(0,0,0,0.04) !important;
-}
-
-/* ═══════════════════ PILLS / CHIPS ═══════════════════ */
-body.lg .pill{
-  background:linear-gradient(135deg, var(--lg-bg-2) 0%, color-mix(in srgb, var(--card2) 40%, transparent) 100%) !important;
-  backdrop-filter:blur(12px) saturate(1.5);
-  -webkit-backdrop-filter:blur(12px) saturate(1.5);
-  border:1px solid var(--lg-border-soft) !important;
-  box-shadow:var(--lg-inset) !important;
-}
-body.lg .pill.active{
-  background:linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 75%, #fff) 100%) !important;
-  box-shadow:0 4px 16px var(--accent-glow), inset 0 1px 1px rgba(255,255,255,0.4) !important;
-}
-body.lg .amount-chip{
-  background:linear-gradient(135deg, var(--lg-bg-2) 0%, color-mix(in srgb, var(--card2) 35%, transparent) 100%) !important;
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  border:1px solid var(--lg-border-soft) !important;
-}
-body.lg .amount-chip.active{
-  background:linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 80%, #fff) 100%) !important;
-}
-
-/* ═══════════════════ MODAL ═══════════════════ */
-body.lg .modal-overlay{
-  background:rgba(0,0,0,0.25) !important;
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
-}
-body.lg .modal-box{
-  background:linear-gradient(160deg, var(--lg-bg-1) 0%, var(--lg-bg-2) 100%) !important;
-  backdrop-filter:url(#lg-refract) blur(40px) saturate(2) brightness(1.08);
-  -webkit-backdrop-filter:blur(40px) saturate(2) brightness(1.08);
-  border:1px solid var(--lg-border) !important;
-  box-shadow:0 -20px 60px rgba(0,0,0,0.15), var(--lg-inset) !important;
-  position:relative;
-  overflow:hidden;
-}
-body.lg .modal-box::before{
-  content:'';
-  position:absolute;
-  top:0; left:0; right:0;
-  height:40%;
-  border-radius:32px 32px 0 0;
-  background:linear-gradient(180deg, var(--lg-specular) 0%, transparent 70%);
-  pointer-events:none;
-  z-index:0;
-  mix-blend-mode:overlay;
-}
-body.lg .modal-box > *{ position:relative; z-index:1; }
-
-/* ═══════════════════ TOAST ═══════════════════ */
-body.lg #toast{
-  background:linear-gradient(135deg, rgba(74,222,128,0.9) 0%, rgba(74,222,128,0.75) 100%) !important;
-  backdrop-filter:blur(20px) saturate(1.8);
-  -webkit-backdrop-filter:blur(20px) saturate(1.8);
-  box-shadow:0 12px 36px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.5) !important;
-  border:1px solid rgba(255,255,255,0.3) !important;
-}
-
-/* ═══════════════════ LIST ITEMS ═══════════════════ */
-body.lg .food-result-item{
-  background:linear-gradient(135deg, var(--lg-bg-2) 0%, color-mix(in srgb, var(--card2) 40%, transparent) 100%) !important;
-  backdrop-filter:blur(16px) saturate(1.6);
-  -webkit-backdrop-filter:blur(16px) saturate(1.6);
-  border:1px solid var(--lg-border-soft) !important;
-  box-shadow:var(--lg-inset), 0 4px 16px rgba(0,0,0,0.04) !important;
-}
-body.lg .recipe-card{
-  background:linear-gradient(135deg, var(--lg-bg-2) 0%, color-mix(in srgb, var(--card2) 40%, transparent) 100%) !important;
-  backdrop-filter:blur(16px) saturate(1.6);
-  -webkit-backdrop-filter:blur(16px) saturate(1.6);
-  border:1px solid var(--lg-border-soft) !important;
-  box-shadow:var(--lg-inset), 0 4px 16px rgba(0,0,0,0.04) !important;
-}
-body.lg .chat-list-item{
-  background:linear-gradient(135deg, var(--lg-bg-2) 0%, color-mix(in srgb, var(--card) 40%, transparent) 100%) !important;
-  backdrop-filter:blur(16px) saturate(1.6);
-  -webkit-backdrop-filter:blur(16px) saturate(1.6);
-  border:2px solid transparent !important;
-}
-body.lg .chat-list-item.active{
-  border-color:var(--accent) !important;
-  background:linear-gradient(135deg, var(--accent-dim) 0%, color-mix(in srgb, var(--accent) 15%, transparent) 100%) !important;
-  box-shadow:0 8px 24px var(--accent-glow) !important;
-}
-
-/* ═══════════════════ CHAT BUBBLES ═══════════════════ */
-body.lg .chat-bubble.bot{
-  background:linear-gradient(135deg, var(--lg-bg-1) 0%, var(--lg-bg-2) 100%) !important;
-  backdrop-filter:url(#lg-refract-sm) blur(20px) saturate(1.8);
-  -webkit-backdrop-filter:blur(20px) saturate(1.8);
-  border:1px solid var(--lg-border) !important;
-  box-shadow:var(--lg-inset), 0 4px 16px rgba(0,0,0,0.04) !important;
-  position:relative;
-  overflow:hidden;
-}
-body.lg .chat-bubble.bot::before{
-  content:'';
-  position:absolute;
-  top:0; left:0; right:0;
-  height:60%;
-  border-radius:inherit;
-  background:linear-gradient(160deg, var(--lg-specular) 0%, transparent 50%);
-  pointer-events:none;
-  mix-blend-mode:overlay;
-}
-body.lg .chat-bubble.user{
-  background:linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 70%, #fff) 100%) !important;
-  box-shadow:0 4px 18px var(--accent-glow), inset 0 1px 1px rgba(255,255,255,0.4) !important;
-  border:1px solid rgba(255,255,255,0.25) !important;
-}
-body.lg #chat-msgs{
-  background:linear-gradient(135deg, color-mix(in srgb, var(--card2) 30%, transparent) 0%, color-mix(in srgb, var(--card2) 18%, transparent) 100%) !important;
-  backdrop-filter:blur(20px) saturate(1.5);
-  -webkit-backdrop-filter:blur(20px) saturate(1.5);
-  border:1px solid var(--lg-border-soft) !important;
-  box-shadow:inset 0 2px 10px rgba(0,0,0,0.03), var(--lg-inset) !important;
-}
-
-/* ═══════════════════ SWIPE ROW ═══════════════════ */
-body.lg .swipe-content{
-  background:linear-gradient(135deg, var(--lg-bg-2) 0%, color-mix(in srgb, var(--card2) 40%, transparent) 100%) !important;
-  backdrop-filter:blur(14px) saturate(1.5);
-  -webkit-backdrop-filter:blur(14px) saturate(1.5);
-  border:1px solid var(--lg-border-soft) !important;
-}
-
-/* ═══════════════════ SETTINGS / DETAILS ═══════════════════ */
-body.lg .settings-radio-row{
-  background:linear-gradient(135deg, var(--lg-bg-2) 0%, color-mix(in srgb, var(--card2) 35%, transparent) 100%) !important;
-  backdrop-filter:blur(14px) saturate(1.5);
-  -webkit-backdrop-filter:blur(14px) saturate(1.5);
-  border:1px solid var(--lg-border-soft) !important;
-}
-body.lg .settings-radio-row.active{
-  background:linear-gradient(135deg, var(--accent-dim) 0%, color-mix(in srgb, var(--accent) 12%, transparent) 100%) !important;
-  border:1px solid var(--accent) !important;
-  box-shadow:0 4px 16px var(--accent-dim) !important;
-}
-body.lg .widget-config-row,
-body.lg .widget-sort-row{
-  background:linear-gradient(135deg, var(--lg-bg-2) 0%, color-mix(in srgb, var(--card2) 35%, transparent) 100%) !important;
-  backdrop-filter:blur(14px) saturate(1.5);
-  -webkit-backdrop-filter:blur(14px) saturate(1.5);
-  border:1px solid var(--lg-border-soft) !important;
-}
-body.lg .barcode-tab.active{
-  background:linear-gradient(135deg, var(--lg-bg-1) 0%, var(--lg-bg-2) 100%) !important;
-  backdrop-filter:blur(14px) saturate(1.6);
-  -webkit-backdrop-filter:blur(14px) saturate(1.6);
-  border:1px solid var(--lg-border-soft) !important;
-}
-body.lg .add-tabs{
-  background:linear-gradient(135deg, var(--lg-bg-2) 0%, color-mix(in srgb, var(--card2) 35%, transparent) 100%) !important;
-  backdrop-filter:blur(14px) saturate(1.5);
-  -webkit-backdrop-filter:blur(14px) saturate(1.5);
-  border:1px solid var(--lg-border-soft) !important;
-}
-body.lg .barcode-tabs{
-  background:linear-gradient(135deg, var(--lg-bg-2) 0%, color-mix(in srgb, var(--card2) 35%, transparent) 100%) !important;
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-  border:1px solid var(--lg-border-soft) !important;
-}
-
-/* ═══════════════════ LOGIN & ONBOARDING ═══════════════════ */
-body.lg .login-card{
-  background:linear-gradient(135deg, var(--lg-bg-1) 0%, var(--lg-bg-2) 100%) !important;
-  backdrop-filter:url(#lg-refract) blur(30px) saturate(1.9);
-  -webkit-backdrop-filter:blur(30px) saturate(1.9);
-  border:1px solid var(--lg-border) !important;
-  box-shadow:var(--lg-shadow), var(--lg-inset) !important;
-  position:relative;
-  overflow:hidden;
-}
-body.lg .login-card::before{
-  content:'';
-  position:absolute;
-  top:0; left:0; right:0;
-  height:50%;
-  border-radius:inherit;
-  background:linear-gradient(180deg, var(--lg-specular) 0%, transparent 70%);
-  pointer-events:none;
-  mix-blend-mode:overlay;
-}
-body.lg .login-input{
-  background:linear-gradient(135deg, color-mix(in srgb, var(--card2) 45%, transparent) 0%, color-mix(in srgb, var(--card2) 25%, transparent) 100%) !important;
-  backdrop-filter:blur(12px) saturate(1.5);
-  -webkit-backdrop-filter:blur(12px) saturate(1.5);
-  border:1px solid var(--lg-border-soft) !important;
-}
-body.lg .login-btn-google{
-  background:linear-gradient(135deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.35) 100%) !important;
-  backdrop-filter:blur(16px) saturate(1.7);
-  -webkit-backdrop-filter:blur(16px) saturate(1.7);
-  border:1px solid var(--lg-border) !important;
-}
-
-/* ═══════════════════ MACRO PREVIEW / AMOUNT ═══════════════════ */
-body.lg .macro-preview{
-  background:linear-gradient(135deg, var(--lg-bg-2) 0%, color-mix(in srgb, var(--card2) 35%, transparent) 100%) !important;
-  backdrop-filter:blur(14px) saturate(1.5);
-  -webkit-backdrop-filter:blur(14px) saturate(1.5);
-  border:1px solid var(--lg-border-soft) !important;
-}
-
-/* ═══════════════════ COOKING MODE ═══════════════════ */
-body.lg .cook-fullscreen{
-  backdrop-filter:blur(40px) saturate(2);
-  -webkit-backdrop-filter:blur(40px) saturate(2);
-}
-body.lg .cook-timer{
-  background:linear-gradient(135deg, var(--accent-dim) 0%, color-mix(in srgb, var(--accent) 15%, transparent) 100%) !important;
-  backdrop-filter:blur(14px) saturate(1.6);
-  -webkit-backdrop-filter:blur(14px) saturate(1.6);
-  border:1px solid var(--accent) !important;
-}
-
-/* ═══════════════════ WATER BUTTON ═══════════════════ */
-body.lg .water-btn{
-  background:linear-gradient(135deg, var(--lg-bg-2) 0%, color-mix(in srgb, var(--card2) 35%, transparent) 100%) !important;
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-  border:1px solid var(--lg-border-soft) !important;
-}
-
-/* ═══════════════════ TORCH & PHOTO BUTTONS ═══════════════════ */
-body.lg .torch-btn{
-  background:linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.25) 100%) !important;
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  border:1px solid rgba(255,255,255,0.2) !important;
-}
-body.lg .chat-photo-btn{
-  background:linear-gradient(135deg, var(--lg-bg-2) 0%, color-mix(in srgb, var(--card2) 35%, transparent) 100%) !important;
-  backdrop-filter:blur(14px) saturate(1.5);
-  -webkit-backdrop-filter:blur(14px) saturate(1.5);
-  border:1px solid var(--lg-border-soft) !important;
-}
-
-/* ═══════════════════ SETTINGS SUMMARY (Details-Toggle) ═══════════════════ */
-body.lg .settings-summary{
-  border-bottom:1px solid var(--lg-border-soft);
-}
-
-/* ═══════════════════ DETAIL CARDS INNERHALB MODALS ═══════════════════ */
-body.lg .settings-advanced-body > .card{
-  background:linear-gradient(135deg, var(--lg-bg-2) 0%, color-mix(in srgb, var(--card2) 45%, transparent) 100%) !important;
-}
-
-/* ═══════════════════ SCROLLBAR / TEXT-SCHATTEN für Lesbarkeit ═══════════════════ */
-body.lg h1, body.lg h2, body.lg h3{
-  text-shadow:0 1px 2px rgba(0,0,0,0.04);
-}
-
-/* Fallback: Falls backdrop-filter: url() nicht unterstützt wird (Firefox),
-   verstärke blur als Kompensation */
-@supports not (backdrop-filter: url(#x)){
-  body.lg .card{ backdrop-filter:blur(28px) saturate(2) brightness(1.08) !important; }
   body.lg .modal-box{ backdrop-filter:blur(40px) saturate(2) brightness(1.1) !important; }
 }
 </style>
 </head>
 <body>
-<!-- ===== LIQUID GLASS SVG FILTERS (Refraktion + Chromatische Aberration) ===== -->
-<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
-  <defs>
-    <!-- Haupt-Refraktionsfilter: Turbulenz-Rauschen → Displacement = Glas-Verzerrung -->
-    <filter id="lg-refract" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.016" numOctaves="2" seed="7" result="noise"/>
-      <feGaussianBlur in="noise" stdDeviation="1.5" result="softNoise"/>
-      <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="35" xChannelSelector="R" yChannelSelector="G"/>
-    </filter>
-    <!-- Leichtere Refraktion für kleinere Elemente -->
-    <filter id="lg-refract-sm" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
-      <feTurbulence type="fractalNoise" baseFrequency="0.02 0.025" numOctaves="2" seed="3" result="noise"/>
-      <feGaussianBlur in="noise" stdDeviation="1" result="softNoise"/>
-      <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="18" xChannelSelector="R" yChannelSelector="G"/>
-    </filter>
-    <!-- Chromatische Aberration: RGB-Splitting für premium Glaskannten -->
-    <filter id="lg-chroma" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
-      <feColorMatrix type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red"/>
-      <feOffset in="red" dx="-1.5" dy="0" result="redShift"/>
-      <feColorMatrix type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="green"/>
-      <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" in="SourceGraphic" result="blue"/>
-      <feOffset in="blue" dx="1.5" dy="0" result="blueShift"/>
-      <feBlend mode="screen" in="redShift" in2="green" result="rg"/>
-      <feBlend mode="screen" in="rg" in2="blueShift"/>
-    </filter>
-  </defs>
-</svg>
 
 <div id="toast"></div>
 <div id="app" style="display:none">
@@ -871,7 +373,8 @@ function ico(name,size=18,extra=''){
     calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/>',
     utensils:'<path d="M4 3v8"/><path d="M7 3v8"/><path d="M5.5 11v10"/><path d="M14 3v18"/><path d="M14 3c3 1 5 4 5 8h-5"/>',
     plug:'<path d="M12 22v-5"/><path d="M9 8V2"/><path d="M15 8V2"/><path d="M7 8h10v4a5 5 0 0 1-10 0V8Z"/><path d="M8 16h8"/>',
-    cart:'<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/>'
+    cart:'<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/>',
+    pipette:'<path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/>'
   };
   return `<svg class="ui-icon" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" ${extra}>${paths[name]||paths.spark}</svg>`;
 }
@@ -1334,25 +837,16 @@ function applyTheme(opts){
   document.documentElement.style.setProperty('--accent',c.accent);
   document.documentElement.style.setProperty('--accent-dim',c.dim);
   document.documentElement.style.setProperty('--accent-glow',c.glow);
-  // ===== LIQUID GLASS =====
-  if(opts.liquidGlass){
-    document.body.classList.add('lg');
-    document.body.dataset.lgScheme=(theme==='dark'||theme==='oled')?'dark':'light';
-  }else{
-    document.body.classList.remove('lg');
-    delete document.body.dataset.lgScheme;
-  }
 }
 
 function updateAndSaveTheme(){
   profileDesignExpanded=true;
   const themeSel=document.getElementById('prof-theme-sel').value;
   const isCompact=document.getElementById('prof-compact-toggle').checked;
-  const isLG=document.getElementById('prof-lg-toggle')?document.getElementById('prof-lg-toggle').checked:false;
   const color=document.getElementById('prof-color').value;
-  const opts={theme:themeSel,compactMode:isCompact,liquidGlass:isLG,accentColor:color};
+  const opts={theme:themeSel,compactMode:isCompact,accentColor:color};
   applyTheme(opts);
-  if(S.profile){S.profile.theme=opts.theme;S.profile.compactMode=opts.compactMode;S.profile.liquidGlass=opts.liquidGlass;S.profile.accentColor=opts.accentColor;S.saveProfile(S.profile);}
+  if(S.profile){S.profile.theme=opts.theme;S.profile.compactMode=opts.compactMode;S.profile.accentColor=opts.accentColor;S.saveProfile(S.profile);}
 }
 
 function selectColor(c,evt){
@@ -1405,7 +899,6 @@ function normalizeProfile(p){
   p.dashboardWidgets={...DEFAULT_DASHBOARD_WIDGETS,...(p.dashboardWidgets||{})};
   p.dashboardWidgetOrder=normalizeDashboardWidgetOrder(p.dashboardWidgetOrder);
   if(typeof p.sleepGoal!=='number')p.sleepGoal=8;
-  if(typeof p.liquidGlass!=='boolean')p.liquidGlass=false;
   return p;
 }
 function getDashboardWidgetPrefs(){return{...DEFAULT_DASHBOARD_WIDGETS,...(S.profile?.dashboardWidgets||{})};}
@@ -1722,19 +1215,19 @@ ANWEISUNGEN:
 - Halte die Antwort kompakt und motivierend (max. 8 Sätze).`;
 }
 
-async function coachChatWithImage(userMessage, b64img){
+async function coachChatWithImages(userMessage, b64Images){
   const provider=getAIProvider();
   const sysPrompt=buildCoachImagePrompt();
-  // Historie ohne Bilder als Text, um Token-Limit zu schonen
-  const histText=(getCurrentMessages()||[]).filter(m=>m.role!=='loading').map(m=>({role:m.role,text:m.image?'[Ein Foto wurde gesendet]':m.text}));
+  const histText=(getCurrentMessages()||[]).filter(m=>m.role!=='loading').map(m=>({role:m.role,text:m.image?'[Ein Foto wurde gesendet]':(m.images&&m.images.length?'['+m.images.length+' Fotos wurden gesendet]':m.text)}));
   const tryOrder=(provider==='auto')?['claude','gemini','groq','mistral']:[provider];
+  const imgs=Array.isArray(b64Images)?b64Images:[b64Images];
 
   for(const prov of tryOrder){
     try{
       if(prov==='claude'&&getClaudeKey()){
         const messages=histText.map(m=>({role:m.role==='user'?'user':'assistant',content:m.text}));
         const userContent=[];
-        if(b64img)userContent.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64img}});
+        imgs.forEach(b64=>userContent.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}}));
         userContent.push({type:'text',text:userMessage||'Was kannst du aus diesen Zutaten kochen?'});
         messages.push({role:'user',content:userContent});
         return await callClaude(messages,sysPrompt,800);
@@ -1745,7 +1238,7 @@ async function coachChatWithImage(userMessage, b64img){
         contents.push({role:'model',parts:[{text:'Verstanden! Ich analysiere dein Bild.'}]});
         histText.forEach(m=>contents.push({role:m.role==='user'?'user':'model',parts:[{text:m.text}]}));
         const userParts=[];
-        if(b64img)userParts.push({inlineData:{mimeType:'image/jpeg',data:b64img}});
+        imgs.forEach(b64=>userParts.push({inlineData:{mimeType:'image/jpeg',data:b64}}));
         userParts.push({text:userMessage||'Was kannst du aus diesen Zutaten kochen?'});
         contents.push({role:'user',parts:userParts});
         return await callGemini(contents);
@@ -1755,7 +1248,7 @@ async function coachChatWithImage(userMessage, b64img){
         const messages=[{role:'system',content:sysPrompt}];
         histText.forEach(m=>messages.push({role:m.role==='user'?'user':'assistant',content:m.text}));
         const userContent=[{type:'text',text:userMessage||'Was kannst du aus diesen Zutaten kochen?'}];
-        if(b64img)userContent.push({type:'image_url',image_url:{url:'data:image/jpeg;base64,'+b64img}});
+        imgs.forEach(b64=>userContent.push({type:'image_url',image_url:{url:'data:image/jpeg;base64,'+b64}}));
         messages.push({role:'user',content:userContent});
         const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:'meta-llama/llama-4-scout-17b-16e-instruct',messages,max_tokens:800,temperature:0.7})});
         if(!r.ok)throw new Error('Groq Fehler ('+r.status+')');
@@ -1767,7 +1260,7 @@ async function coachChatWithImage(userMessage, b64img){
         const messages=[{role:'system',content:sysPrompt}];
         histText.forEach(m=>messages.push({role:m.role==='user'?'user':'assistant',content:m.text}));
         const userContent=[{type:'text',text:userMessage||'Was kannst du aus diesen Zutaten kochen?'}];
-        if(b64img)userContent.push({type:'image_url',image_url:{url:'data:image/jpeg;base64,'+b64img}});
+        imgs.forEach(b64=>userContent.push({type:'image_url',image_url:{url:'data:image/jpeg;base64,'+b64}}));
         messages.push({role:'user',content:userContent});
         const r=await fetch('https://api.mistral.ai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:'pixtral-12b-2409',messages,max_tokens:800,temperature:0.7})});
         if(!r.ok)throw new Error('Mistral Fehler ('+r.status+')');
@@ -1776,7 +1269,7 @@ async function coachChatWithImage(userMessage, b64img){
       }
     }catch(e){console.warn('Image chat provider '+prov+' failed:',e.message);}
   }
-  return 'Ich konnte das Bild leider nicht analysieren. Stelle sicher, dass ein KI-API-Key mit Bildunterstützung hinterlegt ist (Gemini, Claude oder Groq).';
+  return 'Ich konnte die Bilder leider nicht analysieren. Stelle sicher, dass ein KI-API-Key mit Bildunterstützung hinterlegt ist (Gemini, Claude oder Groq).';
 }
 
 // -- LOCAL FALLBACK --
@@ -2589,12 +2082,12 @@ function renderChat(el){
     <div id="chat-msgs" style="flex:1;min-height:360px;overflow-y:auto;background:var(--card2);border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:inset 0 2px 10px rgba(0,0,0,0.03);"></div>
     <div style="display:flex;gap:8px;margin-top:16px">
       <button onclick="window.startVoiceChat()" class="btn btn-ghost" style="padding:13px;flex-shrink:0;border-radius:16px;font-size:20px" title="Spracheingabe">${ico('mic',20)}</button>
-      <button id="chat-photo-btn" onclick="document.getElementById('chat-photo-file').click()" class="chat-photo-btn" title="Foto senden (z.B. Kühlschrank)">${ico('camera',20)}</button>
-      <input type="file" id="chat-photo-file" accept="image/*" style="display:none" onchange="window.handleChatPhoto(this)">
+      <button id="chat-photo-btn" onclick="document.getElementById('chat-photo-file').click()" class="chat-photo-btn" title="Foto(s) senden – z.B. Kühlschrank, Zutaten">${ico('camera',20)}</button>
+      <input type="file" id="chat-photo-file" accept="image/*" multiple style="display:none" onchange="window.handleChatPhotos(this)">
       <input id="chat-inp" class="inp" placeholder="Frag den Coach oder tracke..." onkeydown="if(event.key==='Enter')sendChat()" style="flex:1;border-radius:16px;">
       <button onclick="sendChat()" class="btn" style="padding:13px 20px;flex-shrink:0;border-radius:16px;font-size:18px">${ico('spark',18)}</button>
     </div>
-    <div id="chat-photo-preview"></div>
+    <div id="chat-photos-bar"></div>
   </div>`;
   renderChatMessages();
 }
@@ -2608,34 +2101,77 @@ window.startVoiceChat=function(){
   recognition.onerror=()=>showToast('Fehler bei der Spracherkennung');
 };
 
-// ====================== CHAT PHOTO UPLOAD ======================
-let chatPhoto=null;
-window.handleChatPhoto=function(input){
-  const file=input.files?.[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const img=new Image();
-    img.onload=()=>{
-      const max=480;let w=img.width,h=img.height;
-      if(Math.max(w,h)>max){const scale=max/Math.max(w,h);w=Math.round(w*scale);h=Math.round(h*scale);}
-      const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
-      canvas.getContext('2d').drawImage(img,0,0,w,h);
-      chatPhoto=canvas.toDataURL('image/jpeg',0.6);
-      _renderChatPhotoPreview();
-      const btn=document.getElementById('chat-photo-btn');if(btn)btn.classList.add('has-photo');
-    };
-    img.src=e.target.result;
+// ====================== CHAT PHOTO UPLOAD (Multi) ======================
+let chatPhotos=[]; // Array von dataURL-Strings
+const MAX_CHAT_PHOTOS=6;
+
+function _compressImage(dataURL,callback){
+  const img=new Image();
+  img.onload=()=>{
+    const max=460;let w=img.width,h=img.height;
+    if(Math.max(w,h)>max){const scale=max/Math.max(w,h);w=Math.round(w*scale);h=Math.round(h*scale);}
+    const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+    canvas.getContext('2d').drawImage(img,0,0,w,h);
+    callback(canvas.toDataURL('image/jpeg',0.62));
   };
-  reader.readAsDataURL(file);
+  img.src=dataURL;
+}
+
+window.handleChatPhotos=function(input){
+  const files=Array.from(input.files||[]);
+  if(!files.length)return;
+  const slotsLeft=MAX_CHAT_PHOTOS-chatPhotos.length;
+  if(slotsLeft<=0){showToast('Maximal '+MAX_CHAT_PHOTOS+' Fotos pro Nachricht');input.value='';return;}
+  const toProcess=files.slice(0,slotsLeft);
+  if(files.length>slotsLeft)showToast('Nur die ersten '+slotsLeft+' Fotos übernommen (Max: '+MAX_CHAT_PHOTOS+')');
+  let done=0;
+  toProcess.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      _compressImage(e.target.result,compressed=>{
+        chatPhotos.push(compressed);
+        done++;
+        if(done===toProcess.length){
+          _renderChatPhotosBar();
+          _updatePhotoBtnBadge();
+        }
+      });
+    };
+    reader.readAsDataURL(file);
+  });
   input.value='';
 };
-window.removeChatPhoto=function(){
-  chatPhoto=null;_renderChatPhotoPreview();
-  const btn=document.getElementById('chat-photo-btn');if(btn)btn.classList.remove('has-photo');
+
+window.removeChatPhotoByIndex=function(idx){
+  chatPhotos.splice(idx,1);
+  _renderChatPhotosBar();
+  _updatePhotoBtnBadge();
 };
-function _renderChatPhotoPreview(){
-  const el=document.getElementById('chat-photo-preview');if(!el)return;
-  el.innerHTML=chatPhoto?`<div class="chat-photo-preview"><img src="${chatPhoto}"><button class="remove-btn" onclick="window.removeChatPhoto()">×</button></div>`:'';
+
+window.clearAllChatPhotos=function(){
+  chatPhotos=[];
+  _renderChatPhotosBar();
+  _updatePhotoBtnBadge();
+};
+
+function _renderChatPhotosBar(){
+  const el=document.getElementById('chat-photos-bar');if(!el)return;
+  if(!chatPhotos.length){el.innerHTML='';return;}
+  el.innerHTML='<div class="chat-photos-bar">'+
+    chatPhotos.map((photo,i)=>`<div class="chat-photo-thumb"><img src="${photo}"><span class="idx-badge">${i+1}</span><button class="remove-btn" onclick="window.removeChatPhotoByIndex(${i})">×</button></div>`).join('')+
+    '</div>';
+}
+function _updatePhotoBtnBadge(){
+  const btn=document.getElementById('chat-photo-btn');if(!btn)return;
+  const existing=btn.querySelector('.count-badge');
+  if(chatPhotos.length>0){
+    btn.classList.add('has-photo');
+    if(existing){existing.textContent=chatPhotos.length;}
+    else{const badge=document.createElement('span');badge.className='count-badge';badge.textContent=chatPhotos.length;btn.appendChild(badge);}
+  }else{
+    btn.classList.remove('has-photo');
+    if(existing)existing.remove();
+  }
 }
 
 function escapeText(str){const d=document.createElement('div');d.textContent=str??'';return d.innerHTML;}
@@ -2649,28 +2185,36 @@ function renderChatMessages(){
     container.innerHTML=`<div style="flex:1;min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);padding:24px"><div style="width:58px;height:58px;border-radius:22px;background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:16px">${ico('bot',28)}</div><div style="font-weight:900;font-size:18px;color:var(--text);margin-bottom:6px">Kalorify Coach</div><div style="font-size:13px;line-height:1.45;max-width:280px">Stell eine Frage oder beschreibe, was du gegessen hast.</div></div>`;
     return;
   }
-  container.innerHTML=msgs.map((msg,i)=>{const imgHTML=msg.image?`<img src="${msg.image}" style="max-width:180px;max-height:180px;border-radius:14px;margin-bottom:8px;display:block">`:'';return `<div class="chat-bubble ${msg.role==='user'?'user':'bot'}">${imgHTML}${escapeHTML(msg.text)}</div>`;}).join('');
+  container.innerHTML=msgs.map((msg,i)=>{
+    let imgHTML='';
+    if(msg.image){imgHTML=`<div class="chat-msg-images"><img src="${msg.image}"></div>`;}
+    else if(msg.images&&msg.images.length){imgHTML=`<div class="chat-msg-images">${msg.images.map(src=>`<img src="${src}">`).join('')}</div>`;}
+    return `<div class="chat-bubble ${msg.role==='user'?'user':'bot'}">${imgHTML}${escapeHTML(msg.text)}</div>`;
+  }).join('');
   container.scrollTop=container.scrollHeight;
 }
 
 async function sendChat(){
   const inp=document.getElementById('chat-inp');
   const text=inp.value.trim();
-  const photo=chatPhoto;
-  if(!text&&!photo)return;
+  const photos=chatPhotos.slice();
+  if(!text&&!photos.length)return;
   let msgs=getCurrentMessages();
-  const userMsg={role:'user',text:text||'(Foto gesendet)'};
-  if(photo)userMsg.image=photo;
+  const userMsg={role:'user',text:text||(photos.length>1?('('+photos.length+' Fotos gesendet)'):'(Foto gesendet)')};
+  if(photos.length===1){userMsg.image=photos[0];}
+  else if(photos.length>1){userMsg.images=photos;}
   msgs.push(userMsg);setCurrentMessages(msgs);renderChatMessages();inp.value='';
-  if(photo){chatPhoto=null;_renderChatPhotoPreview();const pbtn=document.getElementById('chat-photo-btn');if(pbtn)pbtn.classList.remove('has-photo');}
+  if(photos.length){window.clearAllChatPhotos();}
   const loading=document.createElement('div');
   loading.className='chat-bubble bot';
   loading.innerHTML='<span style="display:inline-block;animation:spin 1s linear infinite;margin-right:6px">⚙️</span> Coach denkt nach...';
   const container=document.getElementById('chat-msgs');container.appendChild(loading);container.scrollTop=container.scrollHeight;
   try{
     let reply;
-    if(photo){
-      reply=await coachChatWithImage(text||'Was kannst du aus diesen Zutaten kochen? Was siehst du auf dem Bild?',photo.split(',')[1]);
+    if(photos.length){
+      const b64Images=photos.map(p=>p.split(',')[1]);
+      const promptText=text||(photos.length>1?('Ich habe '+photos.length+' Bilder geschickt. Was kannst du aus diesen Zutaten kochen? Was siehst du?'):'Was kannst du aus diesen Zutaten kochen? Was siehst du auf dem Bild?');
+      reply=await coachChatWithImages(promptText,b64Images);
     }else{
       reply=await coachChat(text);
     }
@@ -3167,42 +2711,33 @@ function renderProfile(el){
     <div><div style="font-weight:700">Kompaktes Layout</div></div>
     <label class="toggle-switch"><input type="checkbox" id="prof-compact-toggle" ${isCompact?'checked':''} onchange="updateAndSaveTheme()"><span class="slider"></span></label>
   </div>
-  <div style="padding:16px;background:var(--card2);border-radius:18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-    <div><div style="font-weight:800;background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 60%,#fff));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">✨ Liquid Glass</div><div style="font-size:12px;color:var(--muted);margin-top:2px">iOS 26 Stil – transparente Glaseffekte</div></div>
-    <label class="toggle-switch"><input type="checkbox" id="prof-lg-toggle" ${p.liquidGlass?'checked':''} onchange="updateAndSaveTheme()"><span class="slider"></span></label>
-  </div>
   <div style="padding:16px;background:var(--card2);border-radius:18px">
     <div style="font-weight:700;margin-bottom:16px">Akzentfarbe</div>
     <div class="accent-grid" style="margin-bottom:4px">
       <div class="color-dot ${acc==='lime'?'active':''}" title="Lime" style="background:#A3D65C" onclick="selectColor('lime',event)"></div>
       <div class="color-dot ${acc==='emerald'?'active':''}" title="Green" style="background:#34C759" onclick="selectColor('emerald',event)"></div>
-      <div class="color-dot ${acc==='forest'?'active':''}" title="Forest" style="background:#16A34A" onclick="selectColor('forest',event)"></div>
       <div class="color-dot ${acc==='teal'?'active':''}" title="Teal" style="background:#2EB8A6" onclick="selectColor('teal',event)"></div>
-      <div class="color-dot ${acc==='cyan'?'active':''}" title="Cyan" style="background:#06B6D4" onclick="selectColor('cyan',event)"></div>
-      <div class="color-dot ${acc==='sky'?'active':''}" title="Sky" style="background:#0EA5E9" onclick="selectColor('sky',event)"></div>
       <div class="color-dot ${acc==='blue'?'active':''}" title="Blue" style="background:#5B9CF6" onclick="selectColor('blue',event)"></div>
-      <div class="color-dot ${acc==='indigo'?'active':''}" title="Indigo" style="background:#6366F1" onclick="selectColor('indigo',event)"></div>
       <div class="color-dot ${acc==='purple'?'active':''}" title="Purple" style="background:#9B8AFB" onclick="selectColor('purple',event)"></div>
-      <div class="color-dot ${acc==='violet'?'active':''}" title="Violet" style="background:#8B5CF6" onclick="selectColor('violet',event)"></div>
-      <div class="color-dot ${acc==='magenta'?'active':''}" title="Magenta" style="background:#D946EF" onclick="selectColor('magenta',event)"></div>
-      <div class="color-dot ${acc==='pink'?'active':''}" title="Pink" style="background:#EC4899" onclick="selectColor('pink',event)"></div>
-      <div class="color-dot ${acc==='rose'?'active':''}" title="Rose" style="background:#F47286" onclick="selectColor('rose',event)"></div>
-      <div class="color-dot ${acc==='red'?'active':''}" title="Red" style="background:#EF4444" onclick="selectColor('red',event)"></div>
-      <div class="color-dot ${acc==='crimson'?'active':''}" title="Crimson" style="background:#DC143C" onclick="selectColor('crimson',event)"></div>
+      <div class="color-dot ${acc==='gold'?'active':''}" title="Amber" style="background:#EAB308" onclick="selectColor('gold',event)"></div>
       <div class="color-dot ${acc==='orange'?'active':''}" title="Coral" style="background:#F59E6B" onclick="selectColor('orange',event)"></div>
-      <div class="color-dot ${acc==='amber'?'active':''}" title="Amber" style="background:#F59E0B" onclick="selectColor('amber',event)"></div>
-      <div class="color-dot ${acc==='gold'?'active':''}" title="Gold" style="background:#EAB308" onclick="selectColor('gold',event)"></div>
-      <div class="color-dot ${acc==='brown'?'active':''}" title="Brown" style="background:#92532E" onclick="selectColor('brown',event)"></div>
-      <div class="color-dot ${acc==='slate'?'active':''}" title="Slate" style="background:#64748B" onclick="selectColor('slate',event)"></div>
+      <div class="color-dot ${acc==='rose'?'active':''}" title="Rose" style="background:#F47286" onclick="selectColor('rose',event)"></div>
     </div>
-    <div style="margin-top:16px;padding-top:16px;border-top:1px dashed var(--border);display:flex;align-items:center;gap:14px">
-      <input type="color" id="prof-custom-color" value="${isCustomHex?acc:'#A3D65C'}" oninput="window.selectCustomColor(this.value)" style="width:52px;height:52px;border-radius:14px;border:2px solid var(--border);cursor:pointer;background:none;padding:0;flex-shrink:0;-webkit-appearance:none;appearance:none">
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:700;font-size:14px">Freie Farbauswahl</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">${isCustomHex?'Custom: '+acc.toUpperCase():'Beliebige Farbe wählen'}</div>
+    <label style="display:block;margin-top:16px;padding:14px;background:var(--card2);border-radius:18px;cursor:pointer;transition:border-color .12s">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="position:relative;width:48px;height:48px;border-radius:14px;overflow:hidden;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15);border:2px solid rgba(255,255,255,0.3)">
+          <div style="position:absolute;inset:0;background:${isCustomHex?acc:'#A3D65C'}"></div>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.85);mix-blend-mode:difference">${ico('pipette',22)}</div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:15px">Freie Farbauswahl</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">${isCustomHex?'Custom: '+acc.toUpperCase():'Beliebige Farbe wählen'}</div>
+        </div>
+        ${isCustomHex?'<div style="color:var(--muted);font-size:18px;flex-shrink:0">›</div>':''}
       </div>
-      ${isCustomHex?`<button onclick="selectColor('lime',event);document.getElementById('prof-custom-color').value='#A3D65C'" style="background:var(--card2);border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">Reset</button>`:''}
-    </div>
+      <input type="color" id="prof-custom-color" value="${isCustomHex?acc:'#A3D65C'}" oninput="window.selectCustomColor(this.value)" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none">
+    </label>
+    ${isCustomHex?'<button onclick="selectColor(\'lime\',event);document.getElementById(\'prof-custom-color\').value=\'#A3D65C\'" style="margin-top:8px;background:var(--card2);border:1px solid var(--border);color:var(--muted);border-radius:12px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer">Zurück zu Presets</button>':''}
     <input type="hidden" id="prof-color" value="${acc}">
   </div>
   </div>
@@ -3309,7 +2844,7 @@ window.renderProfileHistoryContent=function(){const el=document.getElementById('
 window.exportData=function(){profileBackupExpanded=true;const data={};for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);data[key]=localStorage.getItem(key);}const blob=new Blob([JSON.stringify(data)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`kalorify_backup_${today()}.json`;a.click();};
 window.importData=function(input){profileBackupExpanded=true;const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{try{const data=JSON.parse(e.target.result);for(const key in data){localStorage.setItem(key,data[key]);}showToast('Daten importiert! Lade App neu...');setTimeout(()=>location.reload(),1500);}catch(err){showToast('Fehler beim Importieren.');}};reader.readAsText(file);};
 window.autoSaveProfileData=function(){clearTimeout(window._profileAutoSaveTimer);window._profileAutoSaveTimer=setTimeout(()=>window.saveProfileData(),300);};
-window.saveProfileData=function(){profileDataExpanded=true;const profile=S.profile||{};const v=id=>document.getElementById(id);if(v('prof-gender'))profile.gender=v('prof-gender').value;if(v('prof-age'))profile.age=parseInt(v('prof-age').value)||profile.age;if(v('prof-weight'))profile.weight=parseInt(v('prof-weight').value)||profile.weight;if(v('prof-height'))profile.height=parseInt(v('prof-height').value)||profile.height;if(v('prof-activity'))profile.activityLevel=v('prof-activity').value;if(v('prof-goal'))profile.goal=v('prof-goal').value;if(v('prof-theme-sel'))profile.theme=v('prof-theme-sel').value;if(v('prof-compact-toggle'))profile.compactMode=v('prof-compact-toggle').checked;if(v('prof-lg-toggle'))profile.liquidGlass=v('prof-lg-toggle').checked;if(v('prof-color'))profile.accentColor=v('prof-color').value;S.saveProfile(profile);applyTheme(profile);};
+window.saveProfileData=function(){profileDataExpanded=true;const profile=S.profile||{};const v=id=>document.getElementById(id);if(v('prof-gender'))profile.gender=v('prof-gender').value;if(v('prof-age'))profile.age=parseInt(v('prof-age').value)||profile.age;if(v('prof-weight'))profile.weight=parseInt(v('prof-weight').value)||profile.weight;if(v('prof-height'))profile.height=parseInt(v('prof-height').value)||profile.height;if(v('prof-activity'))profile.activityLevel=v('prof-activity').value;if(v('prof-goal'))profile.goal=v('prof-goal').value;if(v('prof-theme-sel'))profile.theme=v('prof-theme-sel').value;if(v('prof-compact-toggle'))profile.compactMode=v('prof-compact-toggle').checked;if(v('prof-color'))profile.accentColor=v('prof-color').value;S.saveProfile(profile);applyTheme(profile);};
 window.autoSaveConnectionSettings=function(){profileConnectionsExpanded=true;clearTimeout(window._connectionAutoSaveTimer);window._connectionAutoSaveTimer=setTimeout(()=>{const val=id=>document.getElementById(id)?.value?.trim()||'';if(document.getElementById('claude-key-inp'))store('claudeApiKey',val('claude-key-inp'));if(document.getElementById('groq-key-inp'))store('groqApiKey',val('groq-key-inp'));if(document.getElementById('gemini-key-inp'))S.setGeminiKey(val('gemini-key-inp'));if(document.getElementById('mistral-key-inp'))store('mistralApiKey',val('mistral-key-inp'));if(document.getElementById('usda-key-inp'))store('usdaApiKey',val('usda-key-inp'));if(document.getElementById('apilayer-key-inp'))store('apilayerApiKey',val('apilayer-key-inp'));if(document.getElementById('fs-id-inp'))store('fsClientId',val('fs-id-inp'));if(document.getElementById('fs-sec-inp'))store('fsClientSecret',val('fs-sec-inp'));_fsToken=null;},350);};
 window.saveClaudeKey=function(){window.autoSaveConnectionSettings();};
 window.saveGeminiKey=function(){window.autoSaveConnectionSettings();};
@@ -3884,5 +3419,5 @@ if (fbAuth) {
 boot();
 
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03c8c7cf96a469d',t:'MTc4MDEzMTYyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03dc6738aa99965',t:'MTc4MDE0NDQ4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03ec69e4f716e86',t:'MTc4MDE1NDk4Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a044a0206fbaf558',t:'MTc4MDIxNjMyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a047bf97ecb1b173',t:'MTc4MDI0OTA2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0cbae8daa5ba5b6',t:'MTc4MTYzMjQ4OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03c8c7cf96a469d',t:'MTc4MDEzMTYyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03dc6738aa99965',t:'MTc4MDE0NDQ4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03ec69e4f716e86',t:'MTc4MDE1NDk4Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a044a0206fbaf558',t:'MTc4MDIxNjMyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a047bf97ecb1b173',t:'MTc4MDI0OTA2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0cc22e0d92d1eca',t:'MTc4MTYzNzI1Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
