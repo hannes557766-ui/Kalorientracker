@@ -5,7 +5,8 @@
    - No caching for Firebase/API calls
 */
 
-const SW_VERSION = 'kalorify-sw-2026-05-31-01';
+const SW_VERSION = 'kalorify-sw-2026-06-16-01';
+
 const APP_CACHE = `${SW_VERSION}-app`;
 const RUNTIME_CACHE = `${SW_VERSION}-runtime`;
 
@@ -13,6 +14,7 @@ const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
+  './vendor/html5-qrcode.min.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/maskable-512.png',
@@ -32,7 +34,6 @@ function isSameOrigin(url) {
 function isApiOrAuthRequest(url) {
   const host = url.hostname;
   const path = url.pathname;
-
   return (
     host.includes('firebaseio.com') ||
     host.includes('firebaseapp.com') ||
@@ -78,18 +79,15 @@ async function addAppShell() {
 
 async function networkFirst(request) {
   const cache = await caches.open(APP_CACHE);
-
   const networkPromise = fetch(request).then(async response => {
     if (response && response.ok) {
       await cachePutSafe(APP_CACHE, request, response);
     }
     return response;
   });
-
   const timeoutPromise = new Promise((_, reject) => {
     setTimeout(() => reject(new Error('network-timeout')), NETWORK_TIMEOUT_MS);
   });
-
   try {
     return await Promise.race([networkPromise, timeoutPromise]);
   } catch (_) {
@@ -110,7 +108,6 @@ async function staleWhileRevalidate(request) {
       return response;
     })
     .catch(() => null);
-
   return cached || (await fetchPromise) || offlineFallback();
 }
 
@@ -147,11 +144,9 @@ self.addEventListener('activate', event => {
         .filter(key => !key.startsWith(SW_VERSION))
         .map(key => caches.delete(key))
     );
-
     if (self.registration.navigationPreload) {
       try { await self.registration.navigationPreload.enable(); } catch (_) {}
     }
-
     await self.clients.claim();
   })());
 });
@@ -159,19 +154,15 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const request = event.request;
   if (!isHttpRequest(request) || request.method !== 'GET') return;
-
   const url = new URL(request.url);
-
   if (isApiOrAuthRequest(url)) {
     // Auth/API calls must stay fresh. Never cache them.
     return;
   }
-
   if (request.mode === 'navigate') {
     event.respondWith(networkFirst(request));
     return;
   }
-
   if (isSameOrigin(url)) {
     event.respondWith(staleWhileRevalidate(request));
   }
@@ -179,11 +170,9 @@ self.addEventListener('fetch', event => {
 
 self.addEventListener('message', event => {
   const type = event.data && event.data.type;
-
   if (type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
-
   if (type === 'CLEAR_KALORIFY_CACHES') {
     event.waitUntil(
       caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key))))
