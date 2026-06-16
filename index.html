@@ -292,11 +292,54 @@ input:checked + .slider:before{transform:translateX(24px);background:#000}
 .settings-radio-row.active .radio-dot-inner{display:block}
 .settings-radio-row.active .radio-label{color:var(--text)}
 
+/* ===== KOCHMODUS (komplett überarbeitet) ===== */
 .cook-fullscreen{position:fixed;inset:0;z-index:500;background:var(--bg);color:var(--text);display:flex;flex-direction:column;max-width:480px;margin:0 auto;left:50%;transform:translateX(-50%);box-shadow:0 0 0 9999px rgba(0,0,0,.5)}
-.cook-top{padding:18px 18px 10px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.cook-progress{height:7px;background:var(--card2);border-radius:999px;overflow:hidden;margin:0 18px}.cook-progress div{height:100%;background:var(--accent);border-radius:999px}
-.cook-body{flex:1;display:flex;flex-direction:column;padding:22px 18px;overflow:auto}.cook-step{font-size:28px;line-height:1.18;font-weight:900;letter-spacing:-.04em;margin:20px 0}
-.cook-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 18px 26px}.cook-timer{background:var(--accent-dim);color:var(--accent);border-radius:20px;padding:14px;font-weight:900;text-align:center;margin-top:10px;border:0;cursor:pointer}
+.cook-top{padding:14px 18px 8px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cook-top-info{min-width:0;flex:1}
+.cook-dots{display:flex;gap:5px;margin-bottom:8px}
+.cook-dot{height:7px;flex:1;border-radius:999px;background:var(--border);transition:background .25s}
+.cook-dot.done{background:var(--accent)}
+.cook-dot.current{background:var(--accent);box-shadow:0 0 8px var(--accent-glow)}
+.cook-title{font-weight:900;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cook-close{width:38px;height:38px;border-radius:12px;background:var(--card2);border:1px solid var(--border);color:var(--muted);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background-color .12s}
+.cook-close:active{transform:scale(.9)}
+.cook-body{flex:1;display:flex;flex-direction:column;padding:8px 18px 0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.cook-step-label{font-size:12px;color:var(--accent);font-weight:900;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.cook-step{font-size:25px;line-height:1.25;font-weight:800;letter-spacing:-.03em;margin-bottom:16px}
+.cook-next-preview{background:var(--card2);border-radius:16px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.cook-next-preview .label{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.cook-next-preview .text{font-size:14px;color:var(--dim);font-weight:600;flex:1;min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cook-timer-box{background:var(--accent-dim);border:1px solid var(--accent);border-radius:24px;padding:20px;margin-bottom:16px;text-align:center}
+.cook-timer-circle{width:140px;height:140px;margin:0 auto 14px;position:relative}
+.cook-timer-circle svg{width:100%;height:100%;transform:rotate(-90deg)}
+.cook-timer-circle .ring-bg{fill:none;stroke:var(--border);stroke-width:8}
+.cook-timer-circle .ring-fg{fill:none;stroke:var(--accent);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .5s linear}
+.cook-timer-display{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cook-timer-display .time{font-size:30px;font-weight:900;letter-spacing:-1px;color:var(--text);line-height:1}
+.cook-timer-display .status{font-size:11px;font-weight:800;color:var(--accent);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.cook-timer-btns{display:flex;gap:8px;justify-content:center}
+.cook-timer-btn{background:var(--accent);color:#000;border:none;border-radius:14px;padding:10px 18px;font-size:13px;font-weight:900;cursor:pointer;transition:transform .1s}
+.cook-timer-btn:active{transform:scale(.92)}
+.cook-timer-btn.secondary{background:var(--card2);color:var(--text)}
+.cook-timer-small{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent);border-radius:16px;padding:14px;font-weight:900;text-align:center;margin-bottom:16px;cursor:pointer;font-size:14px;width:100%;transition:transform .1s}
+.cook-timer-small:active{transform:scale(.97)}
+.cook-ing-toggle{background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:14px;padding:12px;font-weight:700;font-size:13px;cursor:pointer;width:100%;margin-bottom:12px;transition:background-color .12s}
+.cook-ing-toggle:active{transform:scale(.98)}
+.cook-ing-list{background:var(--card2);border-radius:16px;padding:6px;margin-bottom:16px}
+.cook-ing-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;cursor:pointer;transition:background-color .1s}
+.cook-ing-item:active{background:var(--border)}
+.cook-ing-check{width:24px;height:24px;border-radius:8px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.cook-ing-item.checked .cook-ing-check{background:var(--accent);border-color:var(--accent)}
+.cook-ing-text{font-size:14px;font-weight:600;transition:all .15s}
+.cook-ing-item.checked .cook-ing-text{text-decoration:line-through;color:var(--muted)}
+.cook-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 18px 28px}
+.cook-done-celebrate{text-align:center;padding:20px}
+.cook-done-celebrate h2{font-size:26px;margin-bottom:8px}
+.cook-done-celebrate p{color:var(--muted);font-size:14px;margin-bottom:20px}
+@keyframes cookTimerPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+.cook-timer-box.running .cook-timer-circle{animation:cookTimerPulse 2s ease-in-out infinite}
+@keyframes cookTimerFinished{0%,100%{transform:scale(1);background:var(--accent-dim)}50%{transform:scale(1.02);background:var(--accent)}}
+.cook-timer-box.finished{animation:cookTimerFinished .6s ease-in-out 5}
 
 
   body.lg .modal-box{ backdrop-filter:blur(40px) saturate(2) brightness(1.1) !important; }
@@ -1087,6 +1130,38 @@ function buildDayContext(){
 // ====================== FIX #7: SMARTER TRACKING PROMPT ======================
 // The coach ONLY adds [TRACK_MEAL] when the user explicitly says they ate something
 // or asks to log/track something. NOT for general questions, tips, or sport discussion.
+// ===== REZEPT-LINK FETCH (CORS-Proxy) =====
+function _extractTextFromHTML(html){
+  try{
+    let text=html.replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<style[\s\S]*?<\/style>/gi,'').replace(/<nav[\s\S]*?<\/nav>/gi,'').replace(/<footer[\s\S]*?<\/footer>/gi,'').replace(/<header[\s\S]*?<\/header>/gi,'');
+    text=text.replace(/<[^>]+>/g,' ');
+    text=text.replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&auml;/g,'ä').replace(/&ouml;/g,'ö').replace(/&uuml;/g,'ü').replace(/&szlig;/g,'ß').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
+    text=text.replace(/\s+/g,' ').trim();
+    return text;
+  }catch(e){return '';}
+}
+async function _fetchRecipeFromURL(url){
+  const proxies=[
+    u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u),
+    u=>'https://corsproxy.io/?url='+encodeURIComponent(u),
+    u=>'https://thingproxy.freeboard.io/fetch/'+u
+  ];
+  for(const makeUrl of proxies){
+    try{
+      const ctrl=new AbortController();
+      const timer=setTimeout(()=>ctrl.abort(),12000);
+      const r=await fetch(makeUrl(url),{signal:ctrl.signal});
+      clearTimeout(timer);
+      if(!r.ok)continue;
+      const html=await r.text();
+      if(!html||html.length<100)continue;
+      const text=_extractTextFromHTML(html);
+      if(text&&text.length>200)return text.slice(0,6000);
+    }catch(e){console.warn('Proxy fetch failed:',e.message);}
+  }
+  return null;
+}
+
 function buildCoachSystemPrompt(){
   const p=S.profile||{};
   const dayCtx=buildDayContext();
@@ -1116,7 +1191,18 @@ Du fügst KEINEN [TRACK_MEAL] Block hinzu wenn:
 
 Format wenn Tracking gewünscht (ganz am Ende, kein Markdown):
 [TRACK_MEAL: {"name":"Produktname", "kcal":250, "p":10, "c":30, "f":5}]
-[TRACK_ACTIVITY: {"name":"Sportart", "kcal":400}]`;
+[TRACK_ACTIVITY: {"name":"Sportart", "kcal":400}]
+
+WICHTIG - REZEPTE SPEICHERN (NUR WENN EXPLIZIT):
+Du fügst den [ADD_RECIPE] Block AUSSCHLIESSLICH dann hinzu, wenn:
+1. Der Nutzer dich bittet, ein Rezept zu erstellen, zu speichern oder hinzuzufügen.
+2. Der Nutzer einen Link teilt und möchte, dass du das Rezept speicherst.
+3. Der Nutzer ein Foto eines Gerichts macht und darum bittet, es als Rezept zu speichern.
+
+Format wenn Rezept speichern gewünscht (ganz am Ende, kein Markdown):
+[ADD_RECIPE: {"name":"Rezeptname","category":"breakfast|lunch|dinner|snack","portions":1,"calories":450,"protein":35,"carbs":40,"fat":12,"ingredients":"200g Hähnchenbrust\n150g Reis\n100g Gemüse","instructions":"1. Hähnchen anbraten\n2. Reis kochen\n3. Gemüse hinzufügen","tags":["High Protein"]}]
+
+Schätze die Nährwerte pro Portion realistisch. ingredients und instructions als Text mit \n als Zeilenumbruch.`;
 }
 
 // -- CLAUDE --
@@ -1212,7 +1298,8 @@ ANWEISUNGEN:
 - Wenn du Lebensmittel/Zutaten siehst (z.B. Kühlschrank, Vorräte): schlage 1-2 konkrete, einfache Rezeptideen vor, die man daraus zubereiten könnte. Schätze grob die Nährwerte pro Portion.
 - Wenn es ein fertiges Gericht ist: schätze die Nährwerte und gib Feedback.
 - Wenn es eine Nährwerttabelle ist: lies die Werte ab.
-- Halte die Antwort kompakt und motivierend (max. 8 Sätze).`;
+- Halte die Antwort kompakt und motivierend (max. 8 Sätze).
+- Wenn der Nutzer dich bittet, ein Gericht als Rezept zu speichern: füge am Ende [ADD_RECIPE: {"name":"...","category":"lunch","portions":1,"calories":0,"protein":0,"carbs":0,"fat":0,"ingredients":"...","instructions":"...","tags":["..."]}] hinzu.`;
 }
 
 async function coachChatWithImages(userMessage, b64Images){
@@ -1313,8 +1400,8 @@ async function coachChat(userMessage){
   else if(provider==='mistral'&&getMistralKey()){try{return await mistralChatCall(userMessage,sysPrompt);}catch(e){}}
   else if(provider==='auto'){
     if(getClaudeKey()){try{return await claudeChatCall(userMessage,sysPrompt);}catch(e){}}
-    if(getGroqKey()){try{return await groqChatCall(userMessage,sysPrompt);}catch(e){}}
     if(S.geminiKey){try{return await geminiChatCall(userMessage,sysPrompt);}catch(e){}}
+    if(getGroqKey()){try{return await groqChatCall(userMessage,sysPrompt);}catch(e){}}
     if(getMistralKey()){try{return await mistralChatCall(userMessage,sysPrompt);}catch(e){}}
   }
   return localCoachResponse(userMessage);
@@ -2211,12 +2298,30 @@ async function sendChat(){
   const container=document.getElementById('chat-msgs');container.appendChild(loading);container.scrollTop=container.scrollHeight;
   try{
     let reply;
+    let effectiveText=text;
+    // ===== Link-Erkennung: Wenn URL enthalten, lade Rezept-Inhalt =====
+    const urlMatch=text.match(/(https?:\/\/[^\s]+)/i);
+    if(urlMatch&&urlMatch[1]){
+      const url=urlMatch[1];
+      loading.innerHTML='<span style="display:inline-block;animation:spin 1s linear infinite;margin-right:6px">🔗</span> Lade Rezept von Link...';
+      try{
+        const pageText=await _fetchRecipeFromURL(url);
+        if(pageText){
+          effectiveText=`Der Nutzer hat diesen Link geteilt: ${url}\n\nHier ist der Inhalt der Webseite (bereits extrahiert):\n${pageText}\n\nBitte analysiere das Rezept und speichere es mit [ADD_RECIPE]. Schätze die Nährwerte pro Portion realistisch. Bestimme eine passende Kategorie.`;
+          showToast('Rezept-Inhalt geladen, analysiere...');
+        }else{
+          effectiveText=`Der Nutzer hat diesen Link geteilt: ${url}\nBitte erstelle ein passendes Rezept mit [ADD_RECIPE]. Ich konnte den Link-Inhalt nicht automatisch laden.`;
+        }
+      }catch(e){
+        effectiveText=text+'\n(Hinweis: Link-Inhalt konnte nicht geladen werden, bitte basierend auf der URL erstellen)';
+      }
+    }
     if(photos.length){
       const b64Images=photos.map(p=>p.split(',')[1]);
-      const promptText=text||(photos.length>1?('Ich habe '+photos.length+' Bilder geschickt. Was kannst du aus diesen Zutaten kochen? Was siehst du?'):'Was kannst du aus diesen Zutaten kochen? Was siehst du auf dem Bild?');
+      const promptText=effectiveText||(photos.length>1?('Ich habe '+photos.length+' Bilder geschickt. Was kannst du aus diesen Zutaten kochen? Was siehst du?'):'Was kannst du aus diesen Zutaten kochen? Was siehst du auf dem Bild?');
       reply=await coachChatWithImages(promptText,b64Images);
     }else{
-      reply=await coachChat(text);
+      reply=await coachChat(effectiveText);
     }
 
     // FIX #3: Robust JSON extraction with regex before JSON.parse
@@ -2243,6 +2348,37 @@ async function sendChat(){
         S.saveDayLog(log);showToast(`Sport eingetragen: +${actData.kcal} kcal`);
         reply=reply.replace(actMatch[0],'').trim();
       }catch(err){console.warn('Activity tracking JSON parse error:',err);reply=reply.replace(actMatch[0],'').trim();}
+    }
+
+    // ===== ADD_RECIPE: Rezept speichern =====
+    const recipeRegex=/\[ADD_RECIPE:\s*(\{[\s\S]*?\})\s*\]/i;
+    const recipeMatch=reply.match(recipeRegex);
+    if(recipeMatch){
+      try{
+        const jsonStr=recipeMatch[1].replace(/[\r\n]/g,' ').trim();
+        const recipeData=JSON.parse(jsonStr);
+        const cat=recipeData.category||'lunch';
+        const validCat=['breakfast','lunch','dinner','snack'].includes(cat)?cat:'lunch';
+        S.upsertRecipe({
+          name:(recipeData.name||'KI-Rezept').trim(),
+          calories:parseInt(recipeData.calories)||0,
+          protein:parseFloat(recipeData.protein)||0,
+          carbs:parseFloat(recipeData.carbs)||0,
+          fat:parseFloat(recipeData.fat)||0,
+          portions:parseFloat(recipeData.portions)||1,
+          unit:recipeData.unit||'Portion',
+          defaultServing:1,
+          gramsPerPortion:0,
+          category:validCat,
+          tags:Array.isArray(recipeData.tags)?recipeData.tags:[],
+          ingredients:recipeData.ingredients||'',
+          instructions:recipeData.instructions||'',
+          image:'',
+          ingredientItems:[]
+        });
+        showToast(`✓ Rezept gespeichert: ${recipeData.name||'KI-Rezept'}`);
+        reply=reply.replace(recipeMatch[0],'').trim();
+      }catch(err){console.warn('Recipe save JSON parse error:',err);reply=reply.replace(recipeMatch[0],'').trim();}
     }
 
     msgs=getCurrentMessages();msgs.push({role:'model',text:reply});setCurrentMessages(msgs);
@@ -2300,8 +2436,8 @@ async function generateRecipeWithAI(request){
     else if(provider==='mistral'&&getMistralKey())txt=await callMistral([{role:'user',content:prompt}]);
     else{
       if(getClaudeKey())txt=await callClaude([{role:'user',content:prompt}],null,700);
-      else if(getGroqKey())txt=await callGroq([{role:'user',content:prompt}]);
       else if(S.geminiKey)txt=await callGemini([{parts:[{text:prompt}]}]);
+      else if(getGroqKey())txt=await callGroq([{role:'user',content:prompt}]);
       else if(getMistralKey())txt=await callMistral([{role:'user',content:prompt}]);
     }
   }catch(e){console.warn('AI recipe generation failed:',e);}
@@ -2389,8 +2525,8 @@ async function parseRecipeDescriptionWithAI(text){
     else if(provider==='mistral'&&getMistralKey())txt=await callMistral([{role:'user',content:prompt}]);
     else{
       if(getClaudeKey())txt=await callClaude([{role:'user',content:prompt}],null,500);
-      else if(getGroqKey())txt=await callGroq([{role:'user',content:prompt}]);
       else if(S.geminiKey)txt=await callGemini([{parts:[{text:prompt}]}]);
+      else if(getGroqKey())txt=await callGroq([{role:'user',content:prompt}]);
       else if(getMistralKey())txt=await callMistral([{role:'user',content:prompt}]);
     }
   }catch(e){console.warn('Recipe description AI failed:',e);}
@@ -2449,8 +2585,8 @@ async function estimateNutritionFromIngredients(){
     else if(provider==='groq'&&getGroqKey()){try{txt=await callGroq([{role:'user',content:prompt}]);}catch(e){}}
     else if(provider==='mistral'&&getMistralKey()){try{txt=await callMistral([{role:'user',content:prompt}]);}catch(e){}}
     else{
-      if(getGroqKey()){try{txt=await callGroq([{role:'user',content:prompt}]);}catch(e){}}
-      if(!txt&&S.geminiKey){try{txt=await callGemini([{parts:[{text:prompt}]}]);}catch(e){}}
+      if(S.geminiKey){try{txt=await callGemini([{parts:[{text:prompt}]}]);}catch(e){}}
+      if(!txt&&getGroqKey()){try{txt=await callGroq([{role:'user',content:prompt}]);}catch(e){}}
       if(!txt&&getClaudeKey()){try{txt=await callClaude([{role:'user',content:prompt}],null,200);}catch(e){}}
       if(!txt&&getMistralKey()){try{txt=await callMistral([{role:'user',content:prompt}]);}catch(e){}}
     }
@@ -2607,45 +2743,242 @@ function addRecipeToDiary(id){const v=getRecipeUseValues(id);if(!v.r)return;cons
 
 
 // ====================== RECIPE COOKING MODE ======================
-let cookingState=null,cookingTimerInt=null,cookingWakeLock=null;
+let cookingState=null,cookingTimerInt=null,cookingWakeLock=null,cookSwipeStartX=0;
 function parseRecipeSteps(text){
   const raw=(text||'').trim();
-  if(!raw)return ['Alles vorbereiten und Rezept nach Geschmack zubereiten.'];
-  let parts=raw.split(/\n+/).map(x=>x.replace(/^\s*(\d+[.)]|[-•])\s*/,'').trim()).filter(Boolean);
+  if(!raw)return ['Alle Zutaten vorbereiten und das Rezept nach Geschmack zubereiten.'];
+  let parts=raw.split(/\n+/).map(x=>x.replace(/^\s*(\d+[.)]|[-•*])\s*/,'').trim()).filter(Boolean);
   if(parts.length<=1)parts=raw.split(/(?<=[.!?])\s+/).map(x=>x.trim()).filter(Boolean);
   return parts.length?parts:[raw];
 }
 function extractStepTimer(step){
   const s=(step||'').toLowerCase();
-  const range=s.match(/(\d+)\s*[-–]\s*(\d+)\s*(min|minute|minuten|sek|sekunden|std|stunde|stunden|h)\b/);
-  const single=s.match(/(\d+)\s*(min|minute|minuten|sek|sekunden|std|stunde|stunden|h)\b/);
+  const range=s.match(/(\d+)\s*[-\u2013]\s*(\d+)\s*(min|minute|minuten|sek|sekunden|std|stunde|stunden|h|stunden?)\b/);
+  const single=s.match(/(\d+)\s*(bis\s*\d+\s*)?(min|minuten?|sek|sekunden?|std|stunden?|h|stunden?)\b/);
   const m=range||single;if(!m)return 0;
-  const val=parseInt(range?m[2]:m[1]);const unit=(range?m[3]:m[2]);
+  const val=parseInt(range?m[2]:m[1]);const unit=(range?m[3]:(m[3]||''));
+  if(!val)return 0;
   if(unit.startsWith('sek'))return val;
   if(unit==='h'||unit.startsWith('std')||unit.startsWith('stunde'))return val*3600;
   return val*60;
 }
-function formatCookingTimer(sec){const m=Math.floor(sec/60),s=sec%60;return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}
+function formatCookingTimer(sec){sec=Math.max(0,sec);const m=Math.floor(sec/60),s=sec%60;return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}
 async function requestCookingWakeLock(){try{if('wakeLock' in navigator)cookingWakeLock=await navigator.wakeLock.request('screen');}catch(e){}}
 function releaseCookingWakeLock(){try{cookingWakeLock?.release?.();}catch(e){}cookingWakeLock=null;}
+
 function openCookingMode(id){
   const r=S.recipes.find(x=>x.id===id);if(!r)return;
   const ingredientText=(r.ingredientItems&&r.ingredientItems.length)?recipeIngredientLines(r.ingredientItems):(r.ingredients||'');
-  cookingState={id,recipe:r,steps:parseRecipeSteps(r.instructions),idx:0,ingredients:ingredientText,showIngredients:false,timer:0};
+  const ingLines=ingredientText?ingredientText.split(/\n+/).map(x=>x.trim()).filter(Boolean):[];
+  cookingState={id,recipe:r,steps:parseRecipeSteps(r.instructions),idx:0,ingredients:ingLines,ingChecked:[],showIngredients:ingLines.length>0&&ingLines.length<=8,timers:{},activeTimerStep:null,timerRunning:false,timerRemaining:0,timerTotal:0};
   requestCookingWakeLock();renderCookingMode();
 }
-function closeCookingMode(){clearInterval(cookingTimerInt);cookingTimerInt=null;releaseCookingWakeLock();cookingState=null;document.getElementById('cook-container')?.remove();}
-function renderCookingMode(){
-  if(!cookingState)return;clearInterval(cookingTimerInt);cookingTimerInt=null;
-  const {recipe,steps,idx}=cookingState;const step=steps[idx];const total=steps.length;const pct=Math.round(((idx+1)/total)*100);const timerSec=extractStepTimer(step);
-  let cont=document.getElementById('cook-container');if(!cont){cont=document.createElement('div');cont.id='cook-container';document.body.appendChild(cont);}
-  cont.innerHTML=`<div class="cook-fullscreen"><div class="cook-top"><div style="min-width:0"><div style="font-size:12px;color:var(--muted);font-weight:900">${idx+1} / ${total}</div><div style="font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(recipe.name)}</div></div><button onclick="closeCookingMode()" class="btn btn-ghost" style="padding:9px 12px;border-radius:12px">Schließen</button></div><div class="cook-progress"><div style="width:${pct}%"></div></div><div class="cook-body"><div style="font-size:13px;color:var(--accent);font-weight:900;text-transform:uppercase;letter-spacing:.8px">Schritt ${idx+1}</div><div class="cook-step">${escapeHTML(step)}</div>${timerSec?`<button onclick="startCookingTimer(${timerSec})" class="cook-timer" id="cook-timer-btn">Timer ${formatCookingTimer(timerSec)} starten</button>`:''}<button onclick="toggleCookingIngredients()" class="btn btn-ghost" style="width:100%;margin-top:12px">${cookingState.showIngredients?'Zutaten ausblenden':'Zutaten anzeigen'}</button>${cookingState.showIngredients?`<div class="card" style="margin-top:12px;line-height:1.55;font-weight:700">${escapeHTML(cookingState.ingredients||'Keine Zutaten hinterlegt')}</div>`:''}</div><div class="cook-actions"><button onclick="prevCookingStep()" class="btn btn-ghost" ${idx===0?'disabled':''}>Zurück</button>${idx===total-1?`<button onclick="finishCookingMode()" class="btn">Fertig</button>`:`<button onclick="nextCookingStep()" class="btn">Weiter</button>`}</div></div>`;
+
+window.closeCookingMode=function(skipConfirm){
+  if(!skipConfirm&&cookingState){
+    const mc=document.getElementById('modal-container');
+    mc.innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)return"><div class="modal-box scale-in" style="text-align:center"><div style="font-size:40px;margin-bottom:12px">${ico('chef',40)}</div><h2 style="margin-bottom:8px">Kochen beenden?</h2><p style="color:var(--muted);font-size:14px;margin-bottom:20px">Dein Fortschritt geht verloren. Möchtest du wirklich abbrechen?</p><button onclick="document.getElementById('modal-container').innerHTML='';window.closeCookingMode(true)" class="btn" style="width:100%;background:var(--fat);color:#fff;margin-bottom:8px">Ja, beenden</button><button onclick="document.getElementById('modal-container').innerHTML=''" class="btn btn-ghost" style="width:100%">Weiter kochen</button></div></div>`;
+    return;
+  }
+  clearInterval(cookingTimerInt);cookingTimerInt=null;releaseCookingWakeLock();cookingState=null;document.getElementById('cook-container')?.remove();document.getElementById('modal-container').innerHTML='';
+};
+
+function _cookTimerBeep(){
+  try{
+    if(!_beepCtx)_beepCtx=new (window.AudioContext||window.webkitAudioContext)();
+    for(let i=0;i<3;i++){
+      setTimeout(()=>{
+        const osc=_beepCtx.createOscillator();const gain=_beepCtx.createGain();
+        osc.connect(gain);gain.connect(_beepCtx.destination);
+        osc.frequency.value=1000;osc.type='sine';
+        gain.gain.setValueAtTime(0.3,_beepCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001,_beepCtx.currentTime+0.2);
+        osc.start();osc.stop(_beepCtx.currentTime+0.2);
+      },i*300);
+    }
+  }catch(e){}
 }
-function startCookingTimer(sec){cookingState.timer=sec;const btn=document.getElementById('cook-timer-btn');clearInterval(cookingTimerInt);const tick=()=>{if(btn)btn.textContent=cookingState.timer>0?`Timer ${formatCookingTimer(cookingState.timer)}`:'Timer fertig';if(cookingState.timer<=0){clearInterval(cookingTimerInt);cookingTimerInt=null;showToast('Timer fertig');return;}cookingState.timer--;};tick();cookingTimerInt=setInterval(tick,1000);}
-function nextCookingStep(){if(!cookingState)return;cookingState.idx=Math.min(cookingState.steps.length-1,cookingState.idx+1);renderCookingMode();}
-function prevCookingStep(){if(!cookingState)return;cookingState.idx=Math.max(0,cookingState.idx-1);renderCookingMode();}
-function toggleCookingIngredients(){if(!cookingState)return;cookingState.showIngredients=!cookingState.showIngredients;renderCookingMode();}
-function finishCookingMode(){const id=cookingState?.id;closeCookingMode();if(id)setTimeout(()=>openRecipeUseModal(id),80);}
+
+window.startCookingTimer=function(sec){
+  if(!cookingState)return;
+  cookingState.activeTimerStep=cookingState.idx;
+  cookingState.timerTotal=sec;
+  cookingState.timerRemaining=sec;
+  cookingState.timerRunning=true;
+  _cookTimerTick();
+  clearInterval(cookingTimerInt);
+  cookingTimerInt=setInterval(_cookTimerTick,1000);
+  renderCookingMode();
+};
+
+function _cookTimerTick(){
+  if(!cookingState||!cookingState.timerRunning)return;
+  if(cookingState.timerRemaining<=0){
+    cookingState.timerRunning=false;
+    clearInterval(cookingTimerInt);cookingTimerInt=null;
+    _cookTimerBeep();
+    try{if(navigator.vibrate)navigator.vibrate([100,50,100,50,200]);}catch(e){}
+    showToast('⏰ Timer fertig!');
+    renderCookingMode();
+    return;
+  }
+  cookingState.timerRemaining--;
+  _cookUpdateTimerDisplay();
+}
+
+function _cookUpdateTimerDisplay(){
+  const timeEl=document.querySelector('.cook-timer-display .time');
+  if(timeEl)timeEl.textContent=formatCookingTimer(cookingState.timerRemaining);
+  const circleEl=document.querySelector('.cook-timer-circle .ring-fg');
+  if(circleEl&&cookingState.timerTotal>0){
+    const r=64;const circ=2*Math.PI*r;
+    const pct=cookingState.timerRemaining/cookingState.timerTotal;
+    circleEl.setAttribute('stroke-dasharray',circ);
+    circleEl.setAttribute('stroke-dashoffset',circ*(1-pct));
+  }
+  const box=document.querySelector('.cook-timer-box');
+  if(box){
+    box.classList.toggle('running',cookingState.timerRunning);
+    const status=box.querySelector('.cook-timer-display .status');
+    if(status)status.textContent=cookingState.timerRunning?'Läuft...':'Fertig!';
+  }
+}
+
+window.pauseCookingTimer=function(){
+  if(!cookingState)return;
+  cookingState.timerRunning=!cookingState.timerRunning;
+  if(cookingState.timerRunning){
+    clearInterval(cookingTimerInt);
+    cookingTimerInt=setInterval(_cookTimerTick,1000);
+  }else{
+    clearInterval(cookingTimerInt);cookingTimerInt=null;
+  }
+  renderCookingMode();
+};
+
+window.resetCookingTimer=function(){
+  if(!cookingState)return;
+  clearInterval(cookingTimerInt);cookingTimerInt=null;
+  cookingState.timerRunning=false;
+  cookingState.activeTimerStep=null;
+  cookingState.timerRemaining=0;
+  renderCookingMode();
+};
+
+window.toggleCookingIngredient=function(idx){
+  if(!cookingState)return;
+  const arr=cookingState.ingChecked;
+  const i=arr.indexOf(idx);
+  if(i>=0)arr.splice(i,1);else arr.push(idx);
+  const item=document.querySelector(`.cook-ing-item[data-ing-idx="${idx}"]`);
+  if(item){
+    item.classList.toggle('checked');
+    const check=item.querySelector('.cook-ing-check');
+    if(check)check.innerHTML=item.classList.contains('checked')?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':'';
+  }
+};
+
+window.toggleCookingIngredients=function(){
+  if(!cookingState)return;
+  cookingState.showIngredients=!cookingState.showIngredients;
+  renderCookingMode();
+};
+
+window.nextCookingStep=function(){
+  if(!cookingState)return;
+  if(cookingState.timerRunning){
+    clearInterval(cookingTimerInt);cookingTimerInt=null;
+    cookingState.timerRunning=false;
+  }
+  cookingState.idx=Math.min(cookingState.steps.length-1,cookingState.idx+1);
+  renderCookingMode();
+};
+
+window.prevCookingStep=function(){
+  if(!cookingState)return;
+  cookingState.idx=Math.max(0,cookingState.idx-1);
+  renderCookingMode();
+};
+
+window.finishCookingMode=function(){
+  clearInterval(cookingTimerInt);cookingTimerInt=null;releaseCookingWakeLock();
+  const id=cookingState?.id;const recipeName=cookingState?.recipe?.name||'Rezept';
+  cookingState=null;document.getElementById('cook-container')?.remove();
+  const mc=document.getElementById('modal-container');
+  mc.innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)document.getElementById('modal-container').innerHTML=''"><div class="modal-box scale-in cook-done-celebrate"><div style="font-size:48px;margin-bottom:8px">${ico('chef',48)}</div><h2>Guten Appetit! 🎉</h2><p><strong>${escapeHTML(recipeName)}</strong> ist fertig.<br>Möchtest du es jetzt eintragen?</p><button onclick="document.getElementById('modal-container').innerHTML='';if('${id}')openRecipeUseModal('${id}')" class="btn" style="width:100%;font-size:16px;padding:15px">${ico('plus',18)} Zum Tagebuch hinzufügen</button><button onclick="document.getElementById('modal-container').innerHTML=''" class="btn btn-ghost" style="width:100%;margin-top:10px">Schließen</button></div></div>`;
+};
+
+function renderCookingMode(){
+  if(!cookingState)return;
+  const {recipe,steps,idx,ingredients,ingChecked,showIngredients}=cookingState;
+  const step=steps[idx];const total=steps.length;const timerSec=extractStepTimer(step);
+  const isLast=idx===total-1;
+  const hasActiveTimer=cookingState.activeTimerStep===idx&&cookingState.timerTotal>0;
+  let cont=document.getElementById('cook-container');
+  if(!cont){cont=document.createElement('div');cont.id='cook-container';document.body.appendChild(cont);}
+
+  let dotsHTML='<div class="cook-dots">';
+  for(let i=0;i<total;i++){
+    const cls=i<idx?'done':(i===idx?'current':'');
+    dotsHTML+=`<div class="cook-dot ${cls}"></div>`;
+  }
+  dotsHTML+='</div>';
+
+  const nextStep=steps[idx+1];
+  let nextHTML='';
+  if(nextStep&&!isLast){
+    const previewText=nextStep.length>80?nextStep.substring(0,77)+'...':nextStep;
+    nextHTML=`<div class="cook-next-preview"><div style="flex:1;min-width:0"><div class="label">Als nächstes</div><div class="text">${escapeHTML(previewText)}</div></div><span style="color:var(--accent);font-size:18px;flex-shrink:0">${ico('spark',16)}</span></div>`;
+  }
+
+  let timerHTML='';
+  if(hasActiveTimer){
+    const pct=cookingState.timerTotal>0?cookingState.timerRemaining/cookingState.timerTotal:0;
+    const r=64;const circ=2*Math.PI*r;const offset=circ*(1-pct);
+    const status=cookingState.timerRunning?'Läuft...':'Pausiert';
+    timerHTML=`<div class="cook-timer-box ${cookingState.timerRunning?'running':''}"><div class="cook-timer-circle"><svg viewBox="0 0 140 140"><circle class="ring-bg" cx="70" cy="70" r="${r}"/><circle class="ring-fg" cx="70" cy="70" r="${r}" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}"/></svg><div class="cook-timer-display"><div class="time">${formatCookingTimer(cookingState.timerRemaining)}</div><div class="status">${status}</div></div></div><div class="cook-timer-btns"><button onclick="window.pauseCookingTimer()" class="cook-timer-btn secondary">${cookingState.timerRunning?'⏸ Pause':'▶ Weiter'}</button><button onclick="window.resetCookingTimer()" class="cook-timer-btn secondary">✕ Stop</button></div></div>`;
+  }else if(timerSec>0){
+    timerHTML=`<button onclick="window.startCookingTimer(${timerSec})" class="cook-timer-small">⏱ Timer starten (${formatCookingTimer(timerSec)})</button>`;
+  }
+
+  let ingHTML='';
+  if(ingredients&&ingredients.length){
+    if(showIngredients){
+      ingHTML='<button onclick="window.toggleCookingIngredients()" class="cook-ing-toggle">'+ico('utensils',15)+' Zutaten ausblenden</button><div class="cook-ing-list">';
+      ingredients.forEach((ing,i)=>{
+        const checked=ingChecked.includes(i);
+        ingHTML+=`<div class="cook-ing-item ${checked?'checked':''}" data-ing-idx="${i}" onclick="window.toggleCookingIngredient(${i})"><div class="cook-ing-check">${checked?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>':''}</div><div class="cook-ing-text">${escapeHTML(ing)}</div></div>`;
+      });
+      ingHTML+='</div>';
+    }else{
+      ingHTML='<button onclick="window.toggleCookingIngredients()" class="cook-ing-toggle">'+ico('utensils',15)+' Zutaten anzeigen ('+ingredients.length+')</button>';
+    }
+  }
+
+  let bodyHTML;
+  if(isLast){
+    bodyHTML=`<div class="cook-done-celebrate"><div style="font-size:44px;margin-bottom:12px">${ico('chef',44)}</div><h2 style="font-size:24px;margin-bottom:8px">Fast geschafft!</h2><p style="color:var(--muted);font-size:15px;margin-bottom:16px">Letzter Schritt:</p><div class="cook-step" style="font-size:22px">${escapeHTML(step)}</div></div>`;
+  }else{
+    bodyHTML=`<div class="cook-step-label">Schritt ${idx+1} von ${total}</div><div class="cook-step">${escapeHTML(step)}</div>${timerHTML}${ingHTML}${nextHTML}`;
+  }
+
+  cont.innerHTML=`<div class="cook-fullscreen"><div class="cook-top"><div class="cook-top-info">${dotsHTML}<div class="cook-title">${escapeHTML(recipe.name)}</div></div><button onclick="window.closeCookingMode()" class="cook-close">✕</button></div><div class="cook-body">${bodyHTML}</div><div class="cook-actions">${idx>0?`<button onclick="window.prevCookingStep()" class="btn btn-ghost">← Zurück</button>`:'<div></div>'}${isLast?`<button onclick="window.finishCookingMode()" class="btn">${ico('check',18)} Fertig!</button>`:`<button onclick="window.nextCookingStep()" class="btn">Weiter →</button>`}</div></div>`;
+
+  _attachCookSwipe();
+}
+
+function _attachCookSwipe(){
+  const body=document.querySelector('.cook-fullscreen .cook-body');
+  if(!body)return;
+  body.addEventListener('touchstart',e=>{cookSwipeStartX=e.touches[0].clientX;},{passive:true});
+  body.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-cookSwipeStartX;
+    if(Math.abs(dx)>80){
+      if(dx<0&&cookingState&&cookingState.idx<cookingState.steps.length-1)window.nextCookingStep();
+      else if(dx>0&&cookingState&&cookingState.idx>0)window.prevCookingStep();
+    }
+  },{passive:true});
+}
 
 // ====================== PROFILE ======================
 const DB_SOURCES=[
@@ -3463,5 +3796,5 @@ if (fbAuth) {
 boot();
 
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03c8c7cf96a469d',t:'MTc4MDEzMTYyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03dc6738aa99965',t:'MTc4MDE0NDQ4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03ec69e4f716e86',t:'MTc4MDE1NDk4Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a044a0206fbaf558',t:'MTc4MDIxNjMyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a047bf97ecb1b173',t:'MTc4MDI0OTA2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0cc2f2d8c281eca',t:'MTc4MTYzNzc1Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03c8c7cf96a469d',t:'MTc4MDEzMTYyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03dc6738aa99965',t:'MTc4MDE0NDQ4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03ec69e4f716e86',t:'MTc4MDE1NDk4Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a044a0206fbaf558',t:'MTc4MDIxNjMyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a047bf97ecb1b173',t:'MTc4MDI0OTA2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
