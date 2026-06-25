@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Kalorify • Personal Coach Edition</title>
 
 <link rel="manifest" href="manifest.json">
@@ -59,10 +59,10 @@ textarea{resize:none}
 .fade-up{animation:none!important}
 .scale-in{animation:scaleIn .4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards}
 
-#app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;position:relative;background:var(--bg)}
-#views{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:90px;transition: opacity 0.2s}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:480px;margin:0 auto;position:relative;background:var(--bg);padding-top:env(safe-area-inset-top)}
+#views{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(110px + env(safe-area-inset-bottom));transition: opacity 0.2s;-webkit-overflow-scrolling:touch}
 
-#nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:color-mix(in srgb, var(--card) 85%, transparent);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding:12px 0 24px;z-index:50;transition:background-color 0.3s;}
+#nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:color-mix(in srgb, var(--card) 85%, transparent);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding:12px 0 calc(24px + env(safe-area-inset-bottom));z-index:50;transition:background-color 0.3s;}
 .nav-btn{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px 14px;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.5px;transition:color .12s ease, background-color .12s ease;}
 .nav-btn.active{color:var(--accent)}
 .nav-btn:active{transform:scale(0.9);}
@@ -90,7 +90,7 @@ textarea{resize:none}
 .chat-bubble{max-width:85%;padding:14px 18px;border-radius:24px;margin-bottom:8px;line-height:1.5;font-size:15px;transition:background-color .12s ease;}
 .chat-bubble.user{background:var(--accent);color:#000;align-self:flex-end;border-bottom-right-radius:4px;box-shadow:0 4px 14px var(--accent-glow);font-weight:600;}
 .chat-bubble.bot{background:var(--card);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px;box-shadow:var(--shadow);}
-.onboarding-screen{display:flex;flex-direction:column;height:100vh;padding:20px;background:var(--bg);color:var(--text)}
+.onboarding-screen{display:flex;flex-direction:column;height:100vh;height:100dvh;padding:20px;background:var(--bg);color:var(--text)}
 
 .macro-bar{height:8px;background:var(--border);border-radius:9999px;overflow:hidden;margin-top:4px}
 .macro-fill{height:100%;transition:none}
@@ -165,9 +165,23 @@ input:checked + .slider:before{transform:translateX(24px);background:#000}
 .barcode-tab{flex:1;border:none;border-radius:11px;padding:10px;font-weight:700;font-size:13px;cursor:pointer;background:transparent;color:var(--muted);transition:background-color .12s ease,color .12s ease}
 .barcode-tab:active:not(.active){transform:scale(0.95);background:var(--border)}
 .barcode-tab.active{background:var(--card);color:var(--text);border:1px solid var(--border);box-shadow:var(--shadow);}
-#barcode-reader-container{border-radius:20px;overflow:hidden;background:#000;margin-bottom:12px;box-shadow:0 10px 30px rgba(0,0,0,0.4);}
-#barcode-reader-container video{width:100%!important;object-fit:cover;border-radius:20px;}
+#barcode-reader-container{border-radius:20px;overflow:hidden;background:#000;margin-bottom:12px;box-shadow:0 10px 30px rgba(0,0,0,0.4);height:280px;position:relative;}
+#barcode-reader-container video{width:100%!important;height:280px!important;object-fit:cover;border-radius:20px;}
 #barcode-reader-container img{display:none!important}
+#barcode-reader{height:280px!important;overflow:hidden!important;border-radius:20px;}
+#barcode-reader video{height:280px!important;object-fit:cover!important}
+/* AGGRESSIV: Alles außer dem Video ausblenden (weg mit den blauen Icons!) */
+#barcode-reader > div:not(:has(video)),
+#barcode-reader #__dashboard,
+#barcode-reader #__filescan,
+#barcode-reader #__header_header,
+#barcode-reader .html5-qrcode__dashboard,
+#barcode-reader .html5-qrcode__dashboard_section,
+#barcode-reader .html5-qrcode__dashboard_section_swap,
+#barcode-reader .html5-qrcode__button,
+#barcode-reader button{display:none!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important;width:0!important;height:0!important;overflow:hidden!important}
+#barcode-reader video{margin:0!important;object-fit:cover!important}
+#barcode-reader-container{overflow:hidden!important}
 #barcode-reader{width:100%}
 .barcode-status{text-align:center;padding:12px;font-size:14px;font-weight:600;color:var(--muted)}
 .barcode-status.found{color:var(--success)}
@@ -212,7 +226,7 @@ input:checked + .slider:before{transform:translateX(24px);background:#000}
 .chat-list-item.active{border-color:var(--accent);background:var(--accent-dim);box-shadow:0 8px 24px var(--accent-glow);}
 
 /* LOGIN SCREEN */
-.login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;padding:24px;background:var(--bg);color:var(--text);text-align:center;position:relative;overflow:hidden;}
+.login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;height:100dvh;padding:24px;background:var(--bg);color:var(--text);text-align:center;position:relative;overflow:hidden;}
 .login-screen::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 30% 20%, var(--accent-dim) 0%, transparent 50%),radial-gradient(circle at 70% 80%, var(--accent-dim) 0%, transparent 50%);opacity:0.3;animation:pulse 8s ease-in-out infinite;pointer-events:none;}
 .login-logo{font-size:52px;margin-bottom:12px}
 .login-title{font-size:32px;font-weight:800;margin-bottom:6px;letter-spacing:-0.03em}
@@ -771,13 +785,110 @@ function logoutUser() {
     fbUID = null;
     fbReady = false;
     showToast('Abgemeldet ✓');
-    setTimeout(() => location.reload(), 800);
+    // Nativer Reset ohne Page-Reload (WebView-freundlich)
+    setTimeout(() => {
+      document.getElementById('app').style.display='none';
+      document.getElementById('onboarding').style.display='none';
+      if(!load('kalorify_logged_out')){store('kalorify_logged_out',true);}
+      window.location.href = window.location.pathname; // Sanftes Reset des URL-State
+      renderLoginScreen();
+    }, 800);
   });
 }
 
 // ====================== STORAGE ======================
 function load(k){try{return localStorage.getItem(k)?JSON.parse(localStorage.getItem(k)):null;}catch(e){return null;}}
-function store(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} if(fbReady && fbUID && !fbSyncing && fbDB){ try{ fbDB.ref('users/'+fbUID+'/'+k).set(v); }catch(e){ console.warn('Firebase sync error', e); } }}
+function _estimateStorageMB(){try{let s=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);s+=(localStorage.getItem(k)||'').length;}return Math.round(s/1024);}catch(e){return 0;}}
+let _storageWarned=false;
+function store(k,v){
+  try{localStorage.setItem(k,JSON.stringify(v));}
+  catch(e){
+    // QuotaExceededError – Speicher ist voll
+    console.warn('localStorage quota exceeded:',e.name);
+    if(!_storageWarned&&typeof showToast==='function'){
+      _storageWarned=true;
+      const mb=_estimateStorageMB();
+      showToast('⚠ Speicher voll ('+mb+' KB)! Bitte Backup im Profil → Datensicherung machen.',5000);
+      // Reset nach 30s, damit Folgefehler erneut warnen
+      setTimeout(()=>{_storageWarned=false;},30000);
+    }
+    return; // Nicht nach Firebase syncen, wenn lokal schon fehlgeschlagen
+  }
+  if(fbReady && fbUID && !fbSyncing && fbDB){ try{ fbDB.ref('users/'+fbUID+'/'+k).set(v); }catch(e){ console.warn('Firebase sync error', e); } }
+}
+
+
+// ====================== INDEXEDDB FÜR BILDER ======================
+// Löst das localStorage-Quota-Problem: Bilder werden in IndexedDB gespeichert
+// (50MB+ Kapazität), nur eine kleine ID ("idb:xxx") landet in localStorage/Firebase.
+// Ein In-Memory-Cache (_imgCache) macht alle Lookups synchron.
+let _imgDB = null;
+const _imgCache = {};
+const _imgDBReady = new Promise((resolve) => {
+  try {
+    const req = indexedDB.open('kalorify_images', 1);
+    req.onupgradeneeded = (e) => {
+      e.target.result.createObjectStore('images', { keyPath: 'id' });
+    };
+    req.onsuccess = (e) => {
+      _imgDB = e.target.result;
+      // Alle Bilder beim Start in Cache laden
+      try {
+        const tx = _imgDB.transaction('images', 'readonly');
+        const store = tx.objectStore('images');
+        const getAll = store.getAll();
+        getAll.onsuccess = (ev) => {
+          (ev.target.result || []).forEach(img => { _imgCache[img.id] = img.data; });
+          resolve();
+        };
+        getAll.onerror = () => resolve();
+      } catch (e2) { resolve(); }
+    };
+    req.onerror = () => resolve();
+  } catch (e) { resolve(); }
+});
+
+// Base64 → IndexedDB. Gibt eine ID ("idb:xxx") zurück.
+// Wenn schon eine idb: ID übergeben wird, wird sie direkt zurückgegeben (kein Re-Save).
+function idbSaveImage(base64OrId) {
+  if (!base64OrId) return '';
+  // Schon eine idb: ID? Direkt zurückgeben
+  if (typeof base64OrId === 'string' && base64OrId.startsWith('idb:')) return base64OrId;
+  // Base64-String? In IndexedDB speichern
+  if (typeof base64OrId === 'string' && base64OrId.startsWith('data:')) {
+    const id = 'idb:' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    _imgCache[id] = base64OrId; // Sofort in Cache (synchron verfügbar)
+    _imgDBReady.then(db => {
+      if (!db) return;
+      try {
+        const tx = db.transaction('images', 'readwrite');
+        tx.objectStore('images').put({ id, data: base64OrId });
+      } catch (e) { console.warn('IDB save error:', e); }
+    });
+    return id;
+  }
+  return base64OrId; // Unbekannter Typ, direkt zurückgeben
+}
+
+// ID → Base64 (synchron aus Cache). Alte Base64-Strings werden direkt zurückgegeben.
+function resolveImg(val) {
+  if (!val) return '';
+  if (typeof val === 'string' && val.startsWith('idb:')) return _imgCache[val] || '';
+  return val; // Alte Base64-Strings oder leer
+}
+
+// Nach IDB-Load: Falls App schon gerendert wurde, einmal neu rendern für Bilder
+_imgDBReady.then(() => {
+  if (window.booted) {
+    setTimeout(() => {
+      try {
+        if (currentView === 'recipes') renderRecipeListOnly();
+        else if (currentView === 'chat') renderChatMessages();
+        else if (typeof renderView === 'function') renderView(currentView);
+      } catch (e) {}
+    }, 100);
+  }
+});
 
 const S={
   profile:null,chats:[],activeChatId:null,currentDate:today(),
@@ -790,7 +901,8 @@ const S={
   saveProfile(p){const n=normalizeProfile(p);store('profile',n);this.profile=n;},
   get waterKey(){return 'water-'+this.currentDate;},
   get todayWater(){return load(this.waterKey)||0;},
-  addWater(ml){const v=this.todayWater+ml;store(this.waterKey,v);return v;},
+  addWater(ml){const v=this.todayWater+ml;store(this.waterKey,v);
+      if(window.kalorifyUpdateWidget)window.kalorifyUpdateWidget();return v;},
   setWater(ml){store(this.waterKey,ml);},
   logWeight(kg){const logs=load('weightLog')||[];const entry={date:this.currentDate,kg};const idx=logs.findIndex(e=>e.date===this.currentDate);if(idx>=0)logs[idx]=entry;else logs.push(entry);store('weightLog',logs);},
   getWeightLog(){return load('weightLog')||[];},
@@ -1485,6 +1597,7 @@ async function addActivityAI(){
       else{kcal=Math.round(dur*5);name=text.substring(0,30);}
       const log=S.dayLog;if(!log.activities)log.activities=[];
       log.activities.push({name,kcal,id:uid()});S.saveDayLog(log);
+      if(window.kalorifyUpdateWidget)window.kalorifyUpdateWidget();
       renderView('dashboard');return showToast(`Sport eingetragen: +${kcal} kcal`);
     }
     // FIX #3: Robust JSON parsing
@@ -2035,7 +2148,8 @@ ${dashboardOrderedHTML}
 
 window.changeDashboardDate=function(val){S.currentDate=val;renderView('dashboard');};
 window.quickAddWater=function(ml){const newVal=S.addWater(ml);showToast(`+${ml}ml Wasser hinzugefügt`);if(currentView==='dashboard')renderView('dashboard');};
-window.logWeightEntry=function(){const inp=document.getElementById('weight-inp');if(!inp)return;const kg=parseFloat(inp.value);if(!kg||kg<20||kg>300)return showToast('Bitte gültiges Gewicht eingeben');S.logWeight(kg);showToast(`${kg} kg gespeichert`);renderView('dashboard');};
+window.logWeightEntry=function(){const inp=document.getElementById('weight-inp');if(!inp)return;const kg=parseFloat(inp.value);if(!kg||kg<20||kg>300)return showToast('Bitte gültiges Gewicht eingeben');S.logWeight(kg);
+      if(window.kalorifyUpdateWidget)window.kalorifyUpdateWidget();showToast(`${kg} kg gespeichert`);renderView('dashboard');};
 
 window.promptWeightEntry=function(){
   const wLog=S.getWeightLog();
@@ -2055,7 +2169,8 @@ window.openWaterModal=function(){
   mc.innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal-box scale-in"><h2 style="margin-bottom:16px">${ico('water',16)} Wasser anpassen</h2><label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">Aktuell getrunken (ml)</label><input type="number" id="water-now-inp" class="inp" value="${S.todayWater}" style="margin-bottom:14px;font-weight:700"><label style="font-size:13px;color:var(--muted);font-weight:600;display:block;margin-bottom:6px">Tagesziel (ml)</label><input type="number" id="water-goal-inp" class="inp" value="${waterGoal}" style="margin-bottom:18px;font-weight:700"><button onclick="window.saveWaterSettings()" class="btn" style="width:100%">Speichern</button><button onclick="closeModal()" class="btn btn-ghost" style="width:100%;margin-top:8px">Abbrechen</button></div></div>`;
 };
 
-window.saveWaterSettings=function(){const now=parseInt(document.getElementById('water-now-inp')?.value)||0;const goal=parseInt(document.getElementById('water-goal-inp')?.value)||2500;S.setWater(now);if(S.profile){S.profile.waterGoal=goal;S.saveProfile(S.profile);}closeModal();if(currentView==='dashboard')renderView('dashboard');};
+window.saveWaterSettings=function(){const now=parseInt(document.getElementById('water-now-inp')?.value)||0;const goal=parseInt(document.getElementById('water-goal-inp')?.value)||2500;S.setWater(now);
+      if(window.kalorifyUpdateWidget)window.kalorifyUpdateWidget();if(S.profile){S.profile.waterGoal=goal;S.saveProfile(S.profile);}closeModal();if(currentView==='dashboard')renderView('dashboard');};
 
 // ====================== FIX #4: HISTORY WITH MACRO AVERAGES ======================
 function getLastDaysLogs(days=7){
@@ -2291,8 +2406,10 @@ function renderChatMessages(){
   }
   container.innerHTML=msgs.map((msg,i)=>{
     let imgHTML='';
-    if(msg.image){imgHTML=`<div class="chat-msg-images"><img src="${msg.image}"></div>`;}
-    else if(msg.images&&msg.images.length){imgHTML=`<div class="chat-msg-images">${msg.images.map(src=>`<img src="${src}">`).join('')}</div>`;}
+    const resolvedImg=resolveImg(msg.image);
+    const resolvedImgs=(msg.images&&msg.images.length)?msg.images.map(s=>resolveImg(s)).filter(Boolean):[];
+    if(resolvedImg){imgHTML=`<div class="chat-msg-images"><img src="${resolvedImg}"></div>`;}
+    else if(resolvedImgs.length){imgHTML=`<div class="chat-msg-images">${resolvedImgs.map(src=>`<img src="${src}">`).join('')}</div>`;}
     return `<div class="chat-bubble ${msg.role==='user'?'user':'bot'}">${imgHTML}${escapeHTML(msg.text)}</div>`;
   }).join('');
   container.scrollTop=container.scrollHeight;
@@ -2305,8 +2422,8 @@ async function sendChat(){
   if(!text&&!photos.length)return;
   let msgs=getCurrentMessages();
   const userMsg={role:'user',text:text||(photos.length>1?('('+photos.length+' Fotos gesendet)'):'(Foto gesendet)')};
-  if(photos.length===1){userMsg.image=photos[0];}
-  else if(photos.length>1){userMsg.images=photos;}
+  if(photos.length===1){userMsg.image=idbSaveImage(photos[0]);}
+  else if(photos.length>1){userMsg.images=photos.map(p=>idbSaveImage(p));}
   msgs.push(userMsg);setCurrentMessages(msgs);renderChatMessages();inp.value='';
   if(photos.length){window.clearAllChatPhotos();}
   _chatDraft='';
@@ -2488,8 +2605,8 @@ function renderRecipeListOnly(){
   if(!list.length){el.innerHTML=`<div class="card" style="padding:28px 18px;text-align:center;color:var(--muted)"><div style="color:var(--accent);margin-bottom:10px">${ico('search',36)}</div><div style="font-weight:800;color:var(--text)">Keine passenden Rezepte</div></div>`;return;}
   el.innerHTML=list.map(r=>`<div class="card" onclick="openRecipeUseModal('${r.id}')" style="margin-bottom:10px;padding:15px 16px;cursor:pointer">
     <div style="display:flex;align-items:center;gap:12px">
-      ${r.image?`<img src="${r.image}" style="width:42px;height:42px;border-radius:15px;object-fit:cover;flex-shrink:0;background:var(--card2)">`:`<div style="width:42px;height:42px;border-radius:15px;background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0">${recipeCategoryIcon(r.category)}</div>`}
-      <div style="flex:1;min-width:0"><div style="font-weight:900;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(r.name)}</div><div style="font-size:12px;color:var(--muted);font-weight:700;margin-top:3px">${recipeCategoryLabel(r.category)} • ${r.calories} kcal / ${unitLabel(r.unit,1)}${(r.ingredients||r.instructions)?' • Details':''}</div></div>
+      ${resolveImg(r.image)?`<img src="${resolveImg(r.image)}" style="width:42px;height:42px;border-radius:15px;object-fit:cover;flex-shrink:0;background:var(--card2)">`:`<div style="width:42px;height:42px;border-radius:15px;background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0">${recipeCategoryIcon(r.category)}</div>`}
+      <div style="flex:1;min-width:0"><div style="font-weight:900;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(r.name)}</div><div style="font-size:12px;color:var(--muted);font-weight:700;margin-top:3px">${recipeCategoryLabel(r.category)} • ${r.calories} kcal / ${unitLabel(r.unit,1)}${(r.ingredients||r.instructions)?' • Details':''}</div>${_renderRatingStars(r.rating,r.id)}</div>
       <button onclick="event.stopPropagation();toggleRecipeFavorite('${r.id}')" style="background:transparent;border:0;color:${r.favorite?'var(--accent)':'var(--muted)'};padding:8px;cursor:pointer">${ico('star',19)}</button>
       <button onclick="event.stopPropagation();openRecipeUseModal('${r.id}')" class="btn" style="padding:9px 12px;border-radius:12px;font-size:13px">+</button>
     </div>
@@ -2529,7 +2646,9 @@ window.setRecipeRating=function(id,rating){
   recipe.rating=rating;
   S.saveRecipes(S.recipes);
   renderRecipeListOnly();
-  if(currentView==='recipes'&&document.querySelector('[data-recipe-use-id="'+id+'"]'))updateRecipeUsePreview(id);
+  // Rezept-Detail aktualisieren falls offen
+  const detailRating=document.querySelector('#recipe-detail-rating');
+  if(detailRating){detailRating.innerHTML=_renderRatingStars(rating,id);}
   showToast(rating>0?('Bewertung: '+rating.toFixed(1)+' Sterne'):'Bewertung entfernt');
 };
 function toggleRecipeFavorite(id){S.toggleRecipeFavorite(id);renderRecipeListOnly();}
@@ -2607,7 +2726,7 @@ function openRecipeEditor(id=null,draft=null){
   const r=draft||(id?S.recipes.find(x=>x.id===id):null);
   const category=r?.category||'lunch';
   const selectedTags=Array.isArray(r?.tags)?r.tags:[];
-  window._recipeEditImage=r?.image||'';
+  window._recipeEditImage=resolveImg(r?.image)||'';
   window._recipeEditIngredientItems=(r?.ingredientItems||[]).map(item=>({...item,id:item.id||uid()}));
   const mc=document.getElementById('modal-container');
   mc.innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal-box"><h2 style="margin-bottom:18px">${id?'Rezept bearbeiten':'Neues Rezept'}</h2>
@@ -2619,14 +2738,15 @@ function openRecipeEditor(id=null,draft=null){
         <button id="recipe-ai-description-btn" onclick="generateRecipeFromDescription()" class="btn btn-ghost" style="width:100%;padding:11px 14px;border-radius:14px;font-size:13px">Zutaten automatisch erkennen</button>
       </div>
       <div style="display:flex;align-items:center;gap:12px;background:var(--card2);border-radius:18px;padding:12px">
-        <div id="recipe-image-preview" style="width:64px;height:64px;border-radius:16px;background:var(--card);color:var(--accent);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">${window._recipeEditImage?`<img src="${window._recipeEditImage}" style="width:100%;height:100%;object-fit:cover">`:ico('image',26)}</div>
+        <div id="recipe-image-preview" style="width:64px;height:64px;border-radius:16px;background:var(--card);color:var(--accent);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">${resolveImg(window._recipeEditImage)?`<img src="${resolveImg(window._recipeEditImage)}" style="width:100%;height:100%;object-fit:cover">`:ico('image',26)}</div>
         <div style="flex:1;min-width:0"><div style="font-weight:800;font-size:14px;margin-bottom:8px">Bild</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button onclick="document.getElementById('recipe-image-input').click()" class="btn btn-ghost" style="padding:8px 10px;font-size:12px;border-radius:10px" type="button">Auswählen</button><button onclick="clearRecipeImage()" class="btn btn-ghost" style="padding:8px 10px;font-size:12px;border-radius:10px" type="button">Entfernen</button></div></div>
         <input id="recipe-image-input" type="file" accept="image/*" style="display:none" onchange="handleRecipeImageFile(this)">
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label style="font-size:11px;color:var(--muted);font-weight:700;display:block;margin-bottom:4px">kcal pro Portion</label><input id="recipe-edit-kcal" type="number" class="inp" placeholder="z.B. 450" value="${r?.calories||''}"></div><div><label style="font-size:11px;color:var(--muted);font-weight:700;display:block;margin-bottom:4px">Ergibt wie viele?</label><input id="recipe-edit-portions" type="number" class="inp" placeholder="z.B. 3" value="${r?.portions||1}" oninput="updateRecipeIngredientTotals()"></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><label style="font-size:11px;color:var(--muted);font-weight:700;display:block;margin-bottom:4px">Gesamt-Kalorien</label><input id="recipe-edit-kcal" type="number" class="inp" placeholder="z.B. 1350" value="${(r?.calories||0)*(r?.portions||1)||''}" oninput="window._updatePerPortionDisplay()"></div><div><label style="font-size:11px;color:var(--muted);font-weight:700;display:block;margin-bottom:4px">Ergibt wie viele?</label><input id="recipe-edit-portions" type="number" class="inp" placeholder="z.B. 3" value="${r?.portions||1}" oninput="window._updatePerPortionDisplay()"></div></div>
+      <div id="recipe-per-portion-display" style="background:var(--accent-dim);border-radius:14px;padding:10px 14px;margin-bottom:10px;font-size:13px;font-weight:800;color:var(--accent);text-align:center">— kcal pro Portion</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><select id="recipe-edit-unit" class="inp">${RECIPE_UNITS.map(u=>`<option value="${u}" ${(r?.unit||'Portion')===u?'selected':''}>${u}</option>`).join('')}</select><input id="recipe-edit-default-serving" type="number" step="0.25" class="inp" placeholder="Standardportion" value="${r?.defaultServing||1}"></div>
       <input id="recipe-edit-grams" type="number" class="inp" placeholder="Gramm pro Portion (optional)" value="${r?.gramsPerPortion||''}">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"><input id="recipe-edit-prot" type="number" class="inp" placeholder="Protein" value="${r?.protein||''}"><input id="recipe-edit-carbs" type="number" class="inp" placeholder="KH" value="${r?.carbs||''}"><input id="recipe-edit-fat" type="number" class="inp" placeholder="Fett" value="${r?.fat||''}"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px"><input id="recipe-edit-prot" type="number" class="inp" placeholder="Protein Gesamt" value="${(r?.protein||0)*(r?.portions||1)||''}" oninput="window._updatePerPortionDisplay()"><input id="recipe-edit-carbs" type="number" class="inp" placeholder="KH Gesamt" value="${(r?.carbs||0)*(r?.portions||1)||''}" oninput="window._updatePerPortionDisplay()"><input id="recipe-edit-fat" type="number" class="inp" placeholder="Fett Gesamt" value="${(r?.fat||0)*(r?.portions||1)||''}" oninput="window._updatePerPortionDisplay()"></div>
       <div style="background:var(--card2);border-radius:18px;padding:14px">
         <div style="font-weight:900;font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px">${ico('search',16)} Zutaten aus Datenbank</div>
         <div class="search-row" style="margin-bottom:8px"><input id="recipe-ing-search" class="inp" placeholder="Zutat suchen..." onkeydown="if(event.key==='Enter')searchRecipeIngredientDB()" style="flex:1;border-radius:14px"><button onclick="searchRecipeIngredientDB()" class="btn" style="padding:12px 14px;border-radius:14px">${ico('search',16)}</button></div>
@@ -2644,9 +2764,9 @@ function openRecipeEditor(id=null,draft=null){
       <button onclick="closeModal()" class="btn btn-ghost" style="width:100%">Abbrechen</button>
     </div>
   </div></div>`;
-  setTimeout(()=>renderRecipeIngredientList(),0);
+  setTimeout(()=>{renderRecipeIngredientList();window._updatePerPortionDisplay();},0);
 }
-function updateRecipeImagePreview(){const el=document.getElementById('recipe-image-preview');if(el)el.innerHTML=window._recipeEditImage?`<img src="${window._recipeEditImage}" style="width:100%;height:100%;object-fit:cover">`:ico('image',26);}
+function updateRecipeImagePreview(){const el=document.getElementById('recipe-image-preview');if(el)el.innerHTML=resolveImg(window._recipeEditImage)?`<img src="${resolveImg(window._recipeEditImage)}" style="width:100%;height:100%;object-fit:cover">`:ico('image',26);}
 function clearRecipeImage(){window._recipeEditImage='';updateRecipeImagePreview();}
 function handleRecipeImageFile(input){
   const file=input.files?.[0];if(!file)return;
@@ -2673,13 +2793,14 @@ function refreshRecipeIngredientSummary(){const items=window._recipeEditIngredie
 function syncRecipeIngredientText(force=false){const ta=document.getElementById('recipe-edit-ingredients');if(!ta)return;const text=recipeIngredientLines(window._recipeEditIngredientItems||[]);if(force||!ta.value.trim()||ta.dataset.autogen==='true'){ta.value=text;ta.dataset.autogen='true';}}
 function updateRecipeIngredientTotals(){
   const items=window._recipeEditIngredientItems||[];syncRecipeIngredientText(false);if(!items.length)return;
-  const portions=Math.max(0.1,parseFloat(document.getElementById('recipe-edit-portions')?.value)||1);
   const t=recipeIngredientTotals();
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
-  set('recipe-edit-kcal',Math.round(t.calories/portions));
-  set('recipe-edit-prot',Math.round(t.protein/portions*10)/10);
-  set('recipe-edit-carbs',Math.round(t.carbs/portions*10)/10);
-  set('recipe-edit-fat',Math.round(t.fat/portions*10)/10);
+  // Gesamt-Werte in die Felder setzen (nicht durch Portionen teilen)
+  set('recipe-edit-kcal',Math.round(t.calories));
+  set('recipe-edit-prot',Math.round(t.protein*10)/10);
+  set('recipe-edit-carbs',Math.round(t.carbs*10)/10);
+  set('recipe-edit-fat',Math.round(t.fat*10)/10);
+  if(window._updatePerPortionDisplay)window._updatePerPortionDisplay();
 }
 function renderRecipeIngredientList(){
   const el=document.getElementById('recipe-ing-list');if(!el)return;
@@ -2698,6 +2819,22 @@ async function searchRecipeIngredientDB(){
   try{const products=(await searchFoodDB(q)).slice(0,8);window._recipeIngredientResults=products;if(!products.length){resultsEl.innerHTML=`<div style="font-size:12px;color:var(--muted);font-weight:700;padding:8px 2px">Nichts gefunden.</div>`;return;}resultsEl.innerHTML=products.map((prod,i)=>{const n=getNutrientsPer100(prod);return`<div onclick="selectRecipeIngredientResult(${i})" style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card);border-radius:12px;padding:10px;margin-bottom:6px;cursor:pointer"><div style="min-width:0"><div style="font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(getProductName(prod))}</div><div style="font-size:11px;color:var(--muted);font-weight:700">P ${n.protein}g • KH ${n.carbs}g • F ${n.fat}g / 100g</div></div><div style="font-weight:900;color:var(--accent);font-size:13px">${n.calories}</div></div>`}).join('');}catch(e){resultsEl.innerHTML=`<div style="font-size:12px;color:var(--fat);font-weight:800;padding:8px 2px">${e.message}</div>`;}
 }
 function selectRecipeIngredientResult(idx){const prod=window._recipeIngredientResults?.[idx];if(!prod)return;const n=getNutrientsPer100(prod);window._recipeEditIngredientItems=[...(window._recipeEditIngredientItems||[]),{id:uid(),name:getProductName(prod),grams:100,per100:n}];const res=document.getElementById('recipe-ing-results');if(res)res.innerHTML='';const inp=document.getElementById('recipe-ing-search');if(inp)inp.value='';syncRecipeIngredientText(true);renderRecipeIngredientList();}
+// Live-Berechnung: Gesamt ÷ Portionen = pro Portion
+window._updatePerPortionDisplay=function(){
+  const kcal=parseFloat(document.getElementById('recipe-edit-kcal')?.value)||0;
+  const portions=parseFloat(document.getElementById('recipe-edit-portions')?.value)||1;
+  const prot=parseFloat(document.getElementById('recipe-edit-prot')?.value)||0;
+  const carbs=parseFloat(document.getElementById('recipe-edit-carbs')?.value)||0;
+  const fat=parseFloat(document.getElementById('recipe-edit-fat')?.value)||0;
+  const el=document.getElementById('recipe-per-portion-display');
+  if(el){
+    const perKcal=Math.round(kcal/portions);
+    const perProt=Math.round(prot/portions*10)/10;
+    const perCarbs=Math.round(carbs/portions*10)/10;
+    const perFat=Math.round(fat/portions*10)/10;
+    el.textContent=perKcal+' kcal • P '+perProt+'g • KH '+perCarbs+'g • F '+perFat+'g pro Portion';
+  }
+};
 async function saveRecipeFromEditor(id=''){
   const name=document.getElementById('recipe-edit-name')?.value.trim();
   let calories=parseInt(document.getElementById('recipe-edit-kcal')?.value)||0;
@@ -2710,10 +2847,10 @@ async function saveRecipeFromEditor(id=''){
   if(!calories&&ingredientText&&ingredientText.trim().length>3){
     const btn=document.querySelector('[onclick^="saveRecipeFromEditor"]');
     if(btn){btn.disabled=true;btn.innerHTML='<span style="display:inline-block;animation:spin 1s linear infinite;margin-right:6px">⚙️</span> Schätze Nährwerte...';}
-    showToast('KI schätzt Nährwerte aus Zutaten...');
+    showToast('KI schätzt Gesamt-Nährwerte...');
     try{
       const portions=parseFloat(document.getElementById('recipe-edit-portions')?.value)||1;
-      const prompt='Analysiere diese Zutatenliste eines Rezepts und schätze die Gesamtnährwerte. Teile dann durch '+portions+' Portion(en). Antworte NUR mit gültigem JSON ohne Markdown: {"calories":0,"protein":0,"carbs":0,"fat":0}. Werte sind PRO Portion. Zutaten:\n'+ingredientText;
+      const prompt='Analysiere diese Zutatenliste eines Rezepts und schätze die GESAMTEN Nährwerte für alle Zutaten zusammen (nicht pro Portion). Antworte NUR mit gültigem JSON ohne Markdown: {"calories":0,"protein":0,"carbs":0,"fat":0}. Werte sind die SUMME aller Zutaten. Zutaten:\n'+ingredientText;
       let txt='';
       if(S.geminiKey){try{txt=await callGemini([{parts:[{text:prompt}]}]);}catch(e){}}
       if(!txt&&getGroqKey()){try{txt=await callGroq([{role:'user',content:prompt}]);}catch(e){}}
@@ -2724,9 +2861,14 @@ async function saveRecipeFromEditor(id=''){
         const match=clean.match(/\{[\s\S]*\}/);
         if(match){
           const result=JSON.parse(match[0]);
-          calories=Math.round(result.calories)||0;
-          if(btn){const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};set('recipe-edit-kcal',calories);set('recipe-edit-prot',Math.round((result.protein||0)*10)/10);set('recipe-edit-carbs',Math.round((result.carbs||0)*10)/10);set('recipe-edit-fat',Math.round((result.fat||0)*10)/10);}
-          showToast('Geschätzt: '+calories+' kcal pro Portion');
+          const totalCalories=Math.round(result.calories)||0;
+          const totalProt=Math.round((result.protein||0)*10)/10;
+          const totalCarbs=Math.round((result.carbs||0)*10)/10;
+          const totalFat=Math.round((result.fat||0)*10)/10;
+          if(btn){const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};set('recipe-edit-kcal',totalCalories);set('recipe-edit-prot',totalProt);set('recipe-edit-carbs',totalCarbs);set('recipe-edit-fat',totalFat);}
+          window._updatePerPortionDisplay();
+          const portions2=parseFloat(document.getElementById('recipe-edit-portions')?.value)||1;
+          showToast('Geschätzt: '+totalCalories+' kcal gesamt → '+Math.round(totalCalories/portions2)+' pro Portion');
         }
       }
     }catch(e){console.warn('Auto-nutrition AI failed:',e);}
@@ -2736,7 +2878,12 @@ async function saveRecipeFromEditor(id=''){
   if(!name)return showToast('Bitte Namen eingeben');
   if(!calories)return showToast('Bitte Kalorien eingeben oder Zutaten hinzufügen für automatische Schätzung');
   const active=document.querySelector('#recipe-edit-category .pill.active');
-  S.upsertRecipe({id:id||null,name,calories,protein:parseFloat(document.getElementById('recipe-edit-prot')?.value)||0,carbs:parseFloat(document.getElementById('recipe-edit-carbs')?.value)||0,fat:parseFloat(document.getElementById('recipe-edit-fat')?.value)||0,portions:parseFloat(document.getElementById('recipe-edit-portions')?.value)||1,category:active?.dataset?.id||'lunch',unit:document.getElementById('recipe-edit-unit')?.value||'Portion',defaultServing:parseFloat(document.getElementById('recipe-edit-default-serving')?.value)||1,gramsPerPortion:parseFloat(document.getElementById('recipe-edit-grams')?.value)||0,tags:[...document.querySelectorAll('#recipe-edit-tags .pill.active')].map(el=>el.dataset.tag),image:window._recipeEditImage||'',ingredients:ingredientText,instructions:document.getElementById('recipe-edit-instructions')?.value||'',ingredientItems});
+  const savePortions=parseFloat(document.getElementById('recipe-edit-portions')?.value)||1;
+  const totalKcal=parseFloat(document.getElementById('recipe-edit-kcal')?.value)||0;
+  const totalProt=parseFloat(document.getElementById('recipe-edit-prot')?.value)||0;
+  const totalCarbs=parseFloat(document.getElementById('recipe-edit-carbs')?.value)||0;
+  const totalFat=parseFloat(document.getElementById('recipe-edit-fat')?.value)||0;
+  S.upsertRecipe({id:id||null,name,calories:Math.round(totalKcal/savePortions),protein:Math.round(totalProt/savePortions*10)/10,carbs:Math.round(totalCarbs/savePortions*10)/10,fat:Math.round(totalFat/savePortions*10)/10,portions:savePortions,category:active?.dataset?.id||'lunch',unit:document.getElementById('recipe-edit-unit')?.value||'Portion',defaultServing:parseFloat(document.getElementById('recipe-edit-default-serving')?.value)||1,gramsPerPortion:parseFloat(document.getElementById('recipe-edit-grams')?.value)||0,tags:[...document.querySelectorAll('#recipe-edit-tags .pill.active')].map(el=>el.dataset.tag),image:idbSaveImage(window._recipeEditImage)||'',ingredients:ingredientText,instructions:document.getElementById('recipe-edit-instructions')?.value||'',ingredientItems});
   closeModal();if(currentView==='recipes')renderView('recipes');showToast('Rezept gespeichert');
 }
 function deleteRecipe(id){S.removeRecipe(id);closeModal();if(currentView==='recipes')renderView('recipes');}
@@ -2752,8 +2899,9 @@ function openRecipeUseModal(id){
   const gramsPerPortion=parseFloat(r.gramsPerPortion)||0;
   const quickServings=[0.5,1,defaultServing,totalPortions].filter((v,i,a)=>v>0&&a.indexOf(v)===i).slice(0,4);
   const mealPills=MEAL_TYPES.map(t=>`<div onclick="selectMealType('${t.id}');updateRecipeUsePreview('${id}')" class="pill ${tempMealType===t.id?'active':''}" style="font-size:13px;padding:8px 13px">${mealIcon(t,15)} ${t.label}</div>`).join('');
-  mc.innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal-box"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px"><h2 style="margin:0;line-height:1.2">${escapeHTML(r.name)}</h2><button onclick="openRecipeEditor('${id}')" class="btn btn-ghost" style="padding:8px 10px;border-radius:10px">${ico('edit',16)}</button></div>
-    ${r.image?`<img src="${r.image}" style="width:100%;max-height:210px;object-fit:cover;border-radius:20px;margin-bottom:14px;background:var(--card2)">`:''}
+  mc.innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal-box"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px"><h2 style="margin:0;line-height:1.2">${escapeHTML(r.name)}</h2><button onclick="openRecipeEditor('${id}')" class="btn btn-ghost" style="padding:8px 10px;border-radius:10px">${ico('edit',16)}</button></div>
+    <div id="recipe-detail-rating" style="margin-bottom:16px">${_renderRatingStars(r.rating,r.id)}</div>
+    ${resolveImg(r.image)?`<img src="${resolveImg(r.image)}" style="width:100%;max-height:210px;object-fit:cover;border-radius:20px;margin-bottom:14px;background:var(--card2)">`:''}
     ${(ingredientText||instructionsText)?`<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">${ingredientText?`<details class="card settings-advanced" open style="padding:0!important;background:var(--card2)!important"><summary class="settings-summary" style="padding:13px 14px"><span class="icon-title">${ico('utensils',16)} Zutaten</span><span class="chev">⌄</span></summary><div style="padding:0 14px 14px;color:var(--text);font-size:14px;line-height:1.5">${escapeHTML(ingredientText)}</div></details>`:''}${instructionsText?`<details class="card settings-advanced" style="padding:0!important;background:var(--card2)!important"><summary class="settings-summary" style="padding:13px 14px"><span class="icon-title">${ico('edit',16)} Zubereitung</span><span class="chev">⌄</span></summary><div style="padding:0 14px 14px;color:var(--text);font-size:14px;line-height:1.5">${escapeHTML(instructionsText)}</div></details>`:''}</div>`:''}
     <div style="background:var(--card2);border-radius:18px;padding:14px;margin-bottom:14px"><div style="font-size:13px;color:var(--muted);font-weight:800;margin-bottom:8px">Ich esse</div><div style="display:flex;gap:8px;align-items:center"><input id="recipe-use-portions" type="number" step="0.25" min="0.25" class="inp" value="${defaultServing}" oninput="updateRecipeUsePreview('${id}')" style="font-weight:900;font-size:22px;text-align:center"><span style="font-weight:800;color:var(--muted);min-width:90px">${unitLabel(unit,defaultServing)}</span></div><div style="font-size:12px;color:var(--muted);font-weight:800;margin-top:8px">von ${totalPortions} ${unitLabel(unit,totalPortions)}${gramsPerPortion?` • ca. ${Math.round(defaultServing*gramsPerPortion)}g`:''}</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">${quickServings.map(v=>`<button onclick="document.getElementById('recipe-use-portions').value='${v}';updateRecipeUsePreview('${id}')" class="pill" style="font-size:12px;padding:7px 12px">${v} ${unitLabel(unit,v)}</button>`).join('')}</div></div>
     <div class="macro-preview"><div class="macro-preview-title">Eintrag</div><div class="macro-preview-grid"><div><div class="macro-preview-val" id="recipe-prev-kcal" style="color:var(--accent)">-</div><div class="macro-preview-label">kcal</div></div><div><div class="macro-preview-val" id="recipe-prev-p" style="color:var(--protein)">-</div><div class="macro-preview-label">Protein</div></div><div><div class="macro-preview-val" id="recipe-prev-c" style="color:var(--carbs)">-</div><div class="macro-preview-label">Carbs</div></div><div><div class="macro-preview-val" id="recipe-prev-f" style="color:var(--fat)">-</div><div class="macro-preview-label">Fett</div></div></div></div>
@@ -2799,12 +2947,11 @@ function openCookingMode(id){
   requestCookingWakeLock();renderCookingMode();
 }
 
-window.closeCookingMode=function(force){
-  if(!force&&cookingState&&!confirm('Kochen beenden? Der Fortschritt geht verloren.'))return;
-  clearInterval(cookingTimerInt);cookingTimerInt=null;releaseCookingWakeLock();cookingState=null;
-  const cc=document.getElementById('cook-container');if(cc)cc.remove();
-  const mc=document.getElementById('modal-container');
-  if(mc.querySelector('.cook-done-celebrate')||force){mc.innerHTML='';}
+window.closeCookingMode=function(){
+  if(cookingTimerInt){clearInterval(cookingTimerInt);cookingTimerInt=null;}
+  releaseCookingWakeLock();cookingState=null;
+  const cc=document.getElementById('cook-container');
+  if(cc){cc.innerHTML='';cc.remove();}
 };
 
 function _cookTimerBeep(){
@@ -2986,7 +3133,7 @@ function renderCookingMode(){
     bodyHTML=`<div class="cook-step-label">Schritt ${idx+1} von ${total}</div><div class="cook-step">${escapeHTML(step)}</div>${timerHTML}${ingHTML}${nextHTML}`;
   }
 
-  cont.innerHTML=`<div class="cook-fullscreen"><div class="cook-top"><div class="cook-top-info">${dotsHTML}<div class="cook-title">${escapeHTML(recipe.name)}</div></div><button onclick="window.closeCookingMode()" class="cook-close">✕</button></div><div class="cook-body">${bodyHTML}</div><div class="cook-actions">${idx>0?`<button onclick="window.prevCookingStep()" class="btn btn-ghost">← Zurück</button>`:'<div></div>'}${isLast?`<button onclick="window.finishCookingMode()" class="btn">${ico('check',18)} Fertig!</button>`:`<button onclick="window.nextCookingStep()" class="btn">Weiter →</button>`}</div></div>`;
+  cont.innerHTML=`<div class="cook-fullscreen"><div class="cook-top"><div class="cook-top-info">${dotsHTML}<div class="cook-title">${escapeHTML(recipe.name)}</div></div><button onclick="window.closeCookingMode()" class="cook-close" style="z-index:510">✕</button></div><div class="cook-body">${bodyHTML}</div><div class="cook-actions">${idx>0?`<button onclick="window.prevCookingStep()" class="btn btn-ghost">← Zurück</button>`:'<div></div>'}${isLast?`<button onclick="window.finishCookingMode()" class="btn">${ico('check',18)} Fertig!</button>`:`<button onclick="window.nextCookingStep()" class="btn">Weiter →</button>`}</div></div>`;
 
   _attachCookSwipe();
 }
@@ -3243,7 +3390,7 @@ function renderProfile(el){
 window.renderProfileHistoryContent=function(){const el=document.getElementById('profile-history-content');if(el)renderHistory(el);};
 
 window.exportData=function(){profileBackupExpanded=true;const data={};for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);data[key]=localStorage.getItem(key);}const blob=new Blob([JSON.stringify(data)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`kalorify_backup_${today()}.json`;a.click();};
-window.importData=function(input){profileBackupExpanded=true;const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{try{const data=JSON.parse(e.target.result);for(const key in data){localStorage.setItem(key,data[key]);}showToast('Daten importiert! Lade App neu...');setTimeout(()=>location.reload(),1500);}catch(err){showToast('Fehler beim Importieren.');}};reader.readAsText(file);};
+window.importData=function(input){profileBackupExpanded=true;const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{try{const data=JSON.parse(e.target.result);for(const key in data){localStorage.setItem(key,data[key]);}showToast('Daten importiert! Aktualisiere...');setTimeout(()=>{S.profile=S.loadProfile();applyTheme(S.profile);navigate('dashboard');},800);}catch(err){showToast('Fehler beim Importieren.');}};reader.readAsText(file);};
 window.autoSaveProfileData=function(){clearTimeout(window._profileAutoSaveTimer);window._profileAutoSaveTimer=setTimeout(()=>window.saveProfileData(),300);};
 window.saveProfileData=function(){profileDataExpanded=true;const profile=S.profile||{};const v=id=>document.getElementById(id);if(v('prof-gender'))profile.gender=v('prof-gender').value;if(v('prof-age'))profile.age=parseInt(v('prof-age').value)||profile.age;if(v('prof-weight'))profile.weight=parseInt(v('prof-weight').value)||profile.weight;if(v('prof-height'))profile.height=parseInt(v('prof-height').value)||profile.height;if(v('prof-activity'))profile.activityLevel=v('prof-activity').value;if(v('prof-goal'))profile.goal=v('prof-goal').value;if(v('prof-theme-sel'))profile.theme=v('prof-theme-sel').value;if(v('prof-compact-toggle'))profile.compactMode=v('prof-compact-toggle').checked;if(v('prof-color'))profile.accentColor=v('prof-color').value;S.saveProfile(profile);applyTheme(profile);};
 window.autoSaveConnectionSettings=function(){profileConnectionsExpanded=true;clearTimeout(window._connectionAutoSaveTimer);window._connectionAutoSaveTimer=setTimeout(()=>{const val=id=>document.getElementById(id)?.value?.trim()||'';if(document.getElementById('claude-key-inp'))store('claudeApiKey',val('claude-key-inp'));if(document.getElementById('groq-key-inp'))store('groqApiKey',val('groq-key-inp'));if(document.getElementById('gemini-key-inp'))S.setGeminiKey(val('gemini-key-inp'));if(document.getElementById('mistral-key-inp'))store('mistralApiKey',val('mistral-key-inp'));if(document.getElementById('usda-key-inp'))store('usdaApiKey',val('usda-key-inp'));if(document.getElementById('apilayer-key-inp'))store('apilayerApiKey',val('apilayer-key-inp'));if(document.getElementById('fs-id-inp'))store('fsClientId',val('fs-id-inp'));if(document.getElementById('fs-sec-inp'))store('fsClientSecret',val('fs-sec-inp'));_fsToken=null;},350);};
@@ -3481,14 +3628,40 @@ function _buildBarcodeTabHTML(){return`<div class="barcode-tabs"><button class="
 function _initBarcodeSubTab(){
   const el=document.getElementById('barcode-sub-content');if(!el)return;
   if(currentBarcodeSubTab==='camera'){
-    el.innerHTML=`<div id="barcode-reader-container" style="min-height:300px;border-radius:24px;position:relative" class="fade-up"><div id="barcode-reader"></div><div class="scan-frame-overlay"><div class="scan-frame"><div class="scan-corner tl"></div><div class="scan-corner tr"></div><div class="scan-corner bl"></div><div class="scan-corner br"></div><div class="scan-line"></div></div></div><button id="torch-btn" class="torch-btn" onclick="window._toggleTorch()" style="display:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></button></div><div id="barcode-status" class="barcode-status" style="margin-top:6px">Barcode in den Rahmen halten</div>`;
-    setTimeout(_startBarcodeScanner,200);
+    
+    // CHECK: Laufen wir in der nativen iOS App?
+    if(window._isNativeApp && window.requestNativeBarcodeScan){
+      // JA: Nativen Button für Swift anzeigen
+      el.innerHTML=`<div style="text-align:center;padding:30px 10px" class="fade-up">
+        <div style="width:80px;height:80px;border-radius:24px;background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">${ico('barcode',42)}</div>
+        <div style="font-weight:800;font-size:16px;margin-bottom:4px">Native Kamera bereit</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Tippe hier, um den iOS-Scanner zu starten</div>
+        <button onclick="window.requestNativeBarcodeScan()" class="btn" style="width:100%;font-size:16px;padding:15px">${ico('camera',18)} Barcode scannen</button>
+      </div>`;
+    } else {
+      // NEIN: Web-Scanner (html5-qrcode) starten (für Browser/GitHub Pages)
+      el.innerHTML=`<div id="barcode-reader-container" style="border-radius:24px;position:relative" class="fade-up"><div id="barcode-reader"></div><div class="scan-frame-overlay"><div class="scan-frame"><div class="scan-corner tl"></div><div class="scan-corner tr"></div><div class="scan-corner bl"></div><div class="scan-corner br"></div><div class="scan-line"></div></div></div><button id="torch-btn" class="torch-btn" onclick="window._toggleTorch()" style="display:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></button></div><div id="barcode-status" class="barcode-status" style="margin-top:6px">Barcode in den Rahmen halten</div>`;
+      setTimeout(_startBarcodeScanner,200);
+    }
   }else{
     el.innerHTML=`<div style="text-align:center;padding:24px 0" class="fade-up"><div style="margin-bottom:12px;color:var(--accent)">${ico('barcode',42)}</div><p style="color:var(--muted);font-size:14px;margin-bottom:16px;font-weight:500;line-height:1.5">Barcode nicht erkannt? Zahlen manuell eingeben.</p></div><div class="search-row fade-up"><input id="manual-barcode-inp" class="inp" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="4005808..." onkeydown="if(event.key==='Enter')lookupManualBarcode()" style="flex:1;letter-spacing:3px;font-weight:700;font-size:16px;text-align:center;border-radius:16px;"><button onclick="lookupManualBarcode()" class="btn" style="padding:12px 22px;flex-shrink:0;border-radius:16px;">${ico('search',18)}</button></div><div id="barcode-manual-status" style="margin-top:8px"></div>`;
   }
 }
 
 function switchBarcodeSubTab(tab){stopBarcodeScanner();currentBarcodeSubTab=tab;document.querySelectorAll('.barcode-tab').forEach((b,i)=>b.classList.toggle('active',(i===0&&tab==='camera')||(i===1&&tab==='manual')));_initBarcodeSubTab();}
+
+// Entfernt ALLES außer Video/Canvas aus dem Scanner-DIV
+function _cleanupScannerUI(){
+  const reader=document.getElementById('barcode-reader');
+  if(!reader)return;
+  reader.querySelectorAll('*').forEach(el=>{
+    if(el.tagName!=='VIDEO'&&el.tagName!=='CANVAS'&&el.tagName!=='SOURCE'){
+      el.remove();
+    }
+  });
+  // Auch die img-Elemente entfernen
+  document.querySelectorAll('#barcode-reader-container img').forEach(el=>el.remove());
+}
 
 function _startBarcodeScanner(){
   const statusEl=document.getElementById('barcode-status');
@@ -3509,6 +3682,12 @@ function _startBarcodeScanner(){
       ()=>{}
     ).then(()=>{
       if(statusEl)statusEl.textContent='Barcode in den Rahmen halten';
+      // html5-qrcode UI Elemente aggressiv entfernen
+      _cleanupScannerUI();
+      setTimeout(_cleanupScannerUI,200);
+      setTimeout(_cleanupScannerUI,500);
+      setTimeout(_cleanupScannerUI,1000);
+      setTimeout(_cleanupScannerUI,2000);
       // Prüfe Torch-Support und zeige Button falls verfügbar
       setTimeout(()=>{
         try{
@@ -3691,10 +3870,10 @@ function closeModal(){
   else document.getElementById('modal-container').innerHTML='';
 }
 
-function showToast(msg){
+function showToast(msg,duration=2800){
   const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';
   t.style.animation='none';void t.offsetWidth;t.style.animation='fadeUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2)';
-  clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>{t.style.animation='fadeOut 0.25s ease-out forwards';setTimeout(()=>{t.style.display='none';t.style.animation='';},250);},2800);
+  clearTimeout(window._toastTimer);window._toastTimer=setTimeout(()=>{t.style.animation='fadeOut 0.25s ease-out forwards';setTimeout(()=>{t.style.display='none';t.style.animation='';},250);},duration);
 }
 
 // ====================== MEAL MANAGEMENT ======================
@@ -3750,6 +3929,218 @@ function applyPendingShortcutImport(){
 }
 
 // ====================== BOOT ======================
+
+// ====================== NATIVE IOS BRIDGE (Swift WKWebView) ======================
+// Diese Schnittstelle wird von Swift aus aufgerufen (webView.evaluateJavaScript)
+// um native Daten (z.B. Apple Health) in die Web-App zu pushen.
+
+// Wird von Swift aufgerufen, sobald die WebView geladen ist (setzt native Umgebung)
+window.setNativeEnvironment = function(version) {
+  window._isNativeApp = true;
+  window._nativeVersion = version || '1.0';
+  console.log('Native iOS Umgebung erkannt (v' + window._nativeVersion + ')');
+  // Optional: Service Worker überspringen, da native App Cache übernimmt
+};
+
+// Empfängt Schritte aus Apple Health (von Swift aus aufgerufen)
+window.pushNativeSteps = function(steps, dateStr) {
+  try {
+    const stepsInt = parseInt(steps) || 0;
+    const targetDate = dateStr || today(); // Fallback: Heute
+    const log = load('log-' + targetDate) || {meals:[],activities:[],steps:0,sleep:{hours:null}};
+    log.steps = stepsInt;
+    store('log-' + targetDate, log);
+    
+    // Wenn Dashboard heute offen ist, aktualisieren
+    if (currentView === 'dashboard' && S.currentDate === targetDate && !_isKalorifyInteracting()) {
+      renderView('dashboard');
+    }
+    console.log('Native Schritte empfangen:', stepsInt, 'für', targetDate);
+    return true; // Bestätigung an Swift
+  } catch (e) {
+    console.error('Fehler beim Empfang von Schritten:', e);
+    return false;
+  }
+};
+
+// Empfängt Schlaf aus Apple Health
+window.pushNativeSleep = function(hours, dateStr) {
+  try {
+    const hoursFloat = parseFloat(hours) || 0;
+    const targetDate = dateStr || today();
+    const log = load('log-' + targetDate) || {meals:[],activities:[],steps:0,sleep:{hours:null}};
+    log.sleep = {hours: Math.round(hoursFloat * 10) / 10};
+    store('log-' + targetDate, log);
+    
+    if (currentView === 'dashboard' && S.currentDate === targetDate && !_isKalorifyInteracting()) {
+      renderView('dashboard');
+    }
+    console.log('Nativer Schlaf empfangen:', hoursFloat, 'h für', targetDate);
+    return true;
+  } catch (e) {
+    console.error('Fehler beim Empfang von Schlaf:', e);
+    return false;
+  }
+};
+
+// Empfängt Gewicht aus Apple Health
+window.pushNativeWeight = function(kg, dateStr) {
+  try {
+    const kgFloat = parseFloat(String(kg).replace(',', '.')) || 0;
+    if (kgFloat < 20 || kgFloat > 300) return false;
+    const targetDate = dateStr || today();
+    
+    const logs = load('weightLog') || [];
+    const entry = {date: targetDate, kg: Math.round(kgFloat * 10) / 10};
+    const idx = logs.findIndex(e => e.date === targetDate);
+    if (idx >= 0) logs[idx] = entry; else logs.push(entry);
+    store('weightLog', logs);
+    
+    if (currentView === 'dashboard' && S.currentDate === targetDate && !_isKalorifyInteracting()) {
+      renderView('dashboard');
+    }
+    console.log('Native Gewicht empfangen:', kgFloat, 'kg für', targetDate);
+    return true;
+  } catch (e) {
+    console.error('Fehler beim Empfang von Gewicht:', e);
+    return false;
+  }
+};
+
+// Generische Funktion für alle Werte auf einmal (Performance-Optimierung für Swift)
+window.pushNativeHealthData = function(dataJson) {
+  try {
+    const data = typeof dataJson === 'string' ? JSON.parse(dataJson) : dataJson;
+    const targetDate = data.date || today();
+    const log = load('log-' + targetDate) || {meals:[],activities:[],steps:0,sleep:{hours:null}};
+    let changed = false;
+    
+    if (data.steps !== undefined) { log.steps = parseInt(data.steps) || 0; changed = true; }
+    if (data.sleep !== undefined) { log.sleep = {hours: Math.round(parseFloat(data.sleep) * 10) / 10}; changed = true; }
+    
+    if (changed) store('log-' + targetDate, log);
+    
+    // Gewicht separat behandeln
+    if (data.weight !== undefined) {
+      const kg = parseFloat(String(data.weight).replace(',', '.'));
+      if (kg >= 20 && kg <= 300) {
+        const logs = load('weightLog') || [];
+        const entry = {date: targetDate, kg: Math.round(kg * 10) / 10};
+        const idx = logs.findIndex(e => e.date === targetDate);
+        if (idx >= 0) logs[idx] = entry; else logs.push(entry);
+        store('weightLog', logs);
+      }
+    }
+    
+    if (changed && currentView === 'dashboard' && S.currentDate === targetDate && !_isKalorifyInteracting()) {
+      renderView('dashboard');
+    }
+    console.log('Native Health-Daten empfangen:', data);
+    return true;
+  } catch (e) {
+    console.error('Fehler beim Empfang von Health-Daten:', e);
+    return false;
+  }
+};
+
+
+// ====================== WIDGET BRIDGE (Swift App Groups) ======================
+// Sammelt die wichtigsten Tagesdaten und schickt sie an Swift, damit Swift
+// sie in das gemeinsame Apple UserDefaults (App Groups) für das Widget speichert.
+window.kalorifyUpdateWidget = function() {
+  if (!window._isNativeApp) return; // Nur in nativer App ausführen
+  try {
+    const log = S.dayLog;
+    const targets = getDynamicTargets(S.profile, log);
+    const totals = sumMeals(log.meals);
+    
+    const widgetData = {
+      date: S.currentDate,
+      consumedCalories: totals.calories,
+      targetCalories: targets.calories,
+      consumedProtein: totals.protein,
+      targetProtein: targets.protein,
+      water: S.todayWater,
+      waterGoal: S.profile?.waterGoal || 2500,
+      steps: log.steps || 0
+    };
+    
+    // An Swift übergeben
+    window.webkit.messageHandlers.kalorifyBridge.postMessage({
+      action: 'updateWidget',
+      data: JSON.stringify(widgetData)
+    });
+    console.log('Widget-Daten an Swift gesendet');
+  } catch (e) {
+    console.error('Widget Update Fehler:', e);
+  }
+};
+
+
+// ====================== NATIVE BARCODE BRIDGE ======================
+// Wird von Swift aufgerufen (webView.evaluateJavaScript), wenn der native iOS-Scanner einen Code liest.
+window.didReceiveBarcode = async function(code) {
+  if (!code) return;
+  console.log('Nativer Barcode empfangen:', code);
+  
+  // Falls der native Scanner während ein Modal offen ist auslöst, schließen wir es zuerst
+  closeModal(); 
+  
+  // Lade-Anzeige im Modal
+  const mc = document.getElementById('modal-container');
+  mc.innerHTML = `<div class="modal-overlay"><div class="modal-box"><div class="food-loading" style="padding:40px 0">${ico('barcode',24)} Suche Produkt ${code}...</div></div></div>`;
+
+  try {
+    // 1. Versuch: Über die eigene Multi-DB Logik suchen (OFF, FatSecret, Edamam)
+    const product = await fetchByBarcode(code);
+    
+    if (product && getKcalPer100(product) > 0) {
+      // Produkt gefunden! Wir öffnen das Standard-Auswahl-Fenster (Menge wählen)
+      product._barcode = code;
+      selectedProduct = product;
+      
+      // Prüfen ob wir den Scan für die schnelle Wiedererkennung cachen wollen
+      const cached = getScanCacheEntry(code);
+      showAmountSelector(product, cached);
+      
+    } else {
+      throw new Error('Keine kcal gefunden');
+    }
+    
+  } catch (error) {
+    console.warn('Barcode nicht in den API-Datenbanken gefunden:', error.message);
+    
+    // 2. Fallback: Manuelles Popup öffnen und Barcode vorausfüllen
+    tempMealType = 'snack'; // Standard auf Snack
+    openAddModal(); // Öffnet das Hinzufügen-Menü
+    
+    // Kurze Verzögerung, damit das Modal gerendert ist, dann auf "Manuell" wechseln
+    setTimeout(() => {
+      switchAddTab('manuell');
+      setTimeout(() => {
+        const nameEl = document.getElementById('man-name');
+        if (nameEl && !nameEl.value) {
+          nameEl.value = 'Barcode ' + code;
+          nameEl.focus();
+        }
+        showToast('Nicht in der Datenbank gefunden. Bitte manuell eingeben.');
+      }, 50);
+    }, 100);
+  }
+};
+
+
+// ====================== NATIVE KAMERA BRIDGE ======================
+// Wird aufgerufen, wenn der User in der App auf "Barcode scannen" tippt.
+// Swift fängt das ab und öffnet die native AVFoundation Kamera.
+window.requestNativeBarcodeScan = function() {
+  try {
+    if (window.webkit && window.webkit.messageHandlers.kalorifyBridge) {
+      window.webkit.messageHandlers.kalorifyBridge.postMessage({ action: 'startBarcodeScan' });
+    }
+  } catch(e) { console.error('Bridge Fehler bei Barcode-Start', e); }
+};
+
 function boot(){
   readShortcutImportFromURL();
 
@@ -3815,10 +4206,28 @@ if (fbAuth) {
     }
   }
 
-  if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').then(r=>console.log('SW aktiv',r.scope)).catch(e=>console.log('SW Info:',e));});}
+  // Service Worker nur registrieren, wenn KEINE native App aktiv ist
+  if('serviceWorker' in navigator && !window._isNativeApp){window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').then(r=>console.log('SW aktiv',r.scope)).catch(e=>console.log('SW Info:',e));});}else if(window._isNativeApp){console.log('Native App erkannt – Service Worker übersprungen');}
+
+  // ===== MITTERNACHTS-CHECK: Erkennt Tageswechsel bei geöffneter App =====
+  _midnightCheck();
+  setInterval(_midnightCheck,60000); // Jede Minute prüfen (sehr leichtgewichtig)
 }
-boot();
+
+function _midnightCheck(){
+  if(!window.booted)return;
+  const newDate=today();
+  if(S.currentDate && S.currentDate!==newDate){
+    console.log('Tageswechsel erkannt:',S.currentDate,'→',newDate);
+    S.currentDate=newDate;
+    // Wenn Dashboard offen: neu rendern mit neuem Tag
+    if(currentView==='dashboard'&&!_isKalorifyInteracting()){
+      renderView('dashboard');
+      showToast('Neuer Tag – '+parseDateKey(newDate).toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'}));
+    }
+  }
+}
 
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03c8c7cf96a469d',t:'MTc4MDEzMTYyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03dc6738aa99965',t:'MTc4MDE0NDQ4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03ec69e4f716e86',t:'MTc4MDE1NDk4Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a044a0206fbaf558',t:'MTc4MDIxNjMyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a047bf97ecb1b173',t:'MTc4MDI0OTA2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0cc9c0d6b7a124d',t:'MTc4MTY0MjIxNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03c8c7cf96a469d',t:'MTc4MDEzMTYyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03dc6738aa99965',t:'MTc4MDE0NDQ4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03ec69e4f716e86',t:'MTc4MDE1NDk4Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a044a0206fbaf558',t:'MTc4MDIxNjMyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a047bf97ecb1b173',t:'MTc4MDI0OTA2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1155febbb49e51b',t:'MTc4MjQwNTIxNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
