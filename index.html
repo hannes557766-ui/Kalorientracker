@@ -355,8 +355,6 @@ input:checked + .slider:before{transform:translateX(24px);background:#000}
 .cook-timer-box.finished{animation:cookTimerFinished .6s ease-in-out 5}
 
 
-  body.lg .modal-box{ backdrop-filter:blur(40px) saturate(2) brightness(1.1) !important; }
-}
 </style>
 </head>
 <body>
@@ -1818,10 +1816,26 @@ function attachSwipeDeleteHandlers(root=document){
 }
 
 // ====================== DASHBOARD ======================
+// ====================== iOS WIDGET BRIDGE ======================
+window.updateNativeWidget = function(gegessen, ziel) {
+  try {
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.updateWidgetData) {
+      window.webkit.messageHandlers.updateWidgetData.postMessage({
+        gegessen: Math.round(gegessen),
+        ziel: Math.round(ziel)
+      });
+    }
+  } catch(e) { console.warn('Widget Bridge Fehler:', e); }
+};
+
 function renderDashboard(el){
   const log=S.dayLog;
   const targets=getDynamicTargets(S.profile,log);
   const totals=sumMeals(log.meals);
+  
+  // iOS Widget aktualisieren
+  if(window.updateNativeWidget) window.updateNativeWidget(totals.calories, targets.calories);
+  
   const hour=new Date().getHours();
   const userName=getUserDisplayName() ? getUserDisplayName().split(' ')[0] : 'Champion';
   let greeting='Hallo';
@@ -2773,7 +2787,7 @@ function parseRecipeSteps(text){
   const raw=(text||'').trim();
   if(!raw)return ['Alle Zutaten vorbereiten und das Rezept nach Geschmack zubereiten.'];
   let parts=raw.split(/\n+/).map(x=>x.replace(/^\s*(\d+[.)]|[-•*])\s*/,'').trim()).filter(Boolean);
-  if(parts.length<=1)parts=raw.split(/(?<=[.!?])\s+/).map(x=>x.trim()).filter(Boolean);
+  if(parts.length<=1)parts=raw.split(/([.!?])\s+/).map(x=>x.trim()).filter(Boolean);
   return parts.length?parts:[raw];
 }
 function extractStepTimer(step){
@@ -3481,8 +3495,20 @@ function _buildBarcodeTabHTML(){return`<div class="barcode-tabs"><button class="
 function _initBarcodeSubTab(){
   const el=document.getElementById('barcode-sub-content');if(!el)return;
   if(currentBarcodeSubTab==='camera'){
-    el.innerHTML=`<div id="barcode-reader-container" style="min-height:300px;border-radius:24px;position:relative" class="fade-up"><div id="barcode-reader"></div><div class="scan-frame-overlay"><div class="scan-frame"><div class="scan-corner tl"></div><div class="scan-corner tr"></div><div class="scan-corner bl"></div><div class="scan-corner br"></div><div class="scan-line"></div></div></div><button id="torch-btn" class="torch-btn" onclick="window._toggleTorch()" style="display:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></button></div><div id="barcode-status" class="barcode-status" style="margin-top:6px">Barcode in den Rahmen halten</div>`;
-    setTimeout(_startBarcodeScanner,200);
+    // Check: Laufen wir in der nativen iOS App?
+    if(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.openScanner){
+      // JA: Nativen Button für Swift anzeigen
+      el.innerHTML=`<div style="text-align:center;padding:30px 10px" class="fade-up">
+        <div style="width:80px;height:80px;border-radius:24px;background:var(--accent-dim);color:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">${ico('barcode',42)}</div>
+        <div style="font-weight:800;font-size:16px;margin-bottom:4px">Native Kamera bereit</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Tippe hier, um den iOS-Scanner zu starten</div>
+        <button onclick="window.requestNativeBarcodeScan()" class="btn" style="width:100%;font-size:16px;padding:15px">${ico('camera',18)} Barcode scannen</button>
+      </div>`;
+    } else {
+      // NEIN: Web-Scanner (html5-qrcode) starten (für Browser)
+      el.innerHTML=`<div id="barcode-reader-container" style="height:300px;border-radius:24px;position:relative" class="fade-up"><div id="barcode-reader"></div><div class="scan-frame-overlay"><div class="scan-frame"><div class="scan-corner tl"></div><div class="scan-corner tr"></div><div class="scan-corner bl"></div><div class="scan-corner br"></div><div class="scan-line"></div></div></div></div><div id="barcode-status" class="barcode-status" style="margin-top:6px">Barcode in den Rahmen halten</div>`;
+      setTimeout(_startBarcodeScanner,200);
+    }
   }else{
     el.innerHTML=`<div style="text-align:center;padding:24px 0" class="fade-up"><div style="margin-bottom:12px;color:var(--accent)">${ico('barcode',42)}</div><p style="color:var(--muted);font-size:14px;margin-bottom:16px;font-weight:500;line-height:1.5">Barcode nicht erkannt? Zahlen manuell eingeben.</p></div><div class="search-row fade-up"><input id="manual-barcode-inp" class="inp" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="4005808..." onkeydown="if(event.key==='Enter')lookupManualBarcode()" style="flex:1;letter-spacing:3px;font-weight:700;font-size:16px;text-align:center;border-radius:16px;"><button onclick="lookupManualBarcode()" class="btn" style="padding:12px 22px;flex-shrink:0;border-radius:16px;">${ico('search',18)}</button></div><div id="barcode-manual-status" style="margin-top:8px"></div>`;
   }
@@ -3750,6 +3776,18 @@ function applyPendingShortcutImport(){
 }
 
 // ====================== BOOT ======================
+
+// ====================== NATIVE iOS BRIDGE ======================
+// Wird aufgerufen, wenn der User in der App auf "Barcode scannen" tippt.
+// Swift fängt das ab (Name: "openScanner") und öffnet die AVFoundation Kamera.
+window.requestNativeBarcodeScan = function() {
+  try {
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.openScanner) {
+      window.webkit.messageHandlers.openScanner.postMessage({ action: 'startBarcodeScan' });
+    }
+  } catch(e) { console.error('Bridge Fehler bei Barcode-Start', e); }
+};
+
 function boot(){
   readShortcutImportFromURL();
 
@@ -3820,5 +3858,5 @@ if (fbAuth) {
 boot();
 
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03c8c7cf96a469d',t:'MTc4MDEzMTYyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03dc6738aa99965',t:'MTc4MDE0NDQ4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03ec69e4f716e86',t:'MTc4MDE1NDk4Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a044a0206fbaf558',t:'MTc4MDIxNjMyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a047bf97ecb1b173',t:'MTc4MDI0OTA2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0cc9c0d6b7a124d',t:'MTc4MTY0MjIxNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03c8c7cf96a469d',t:'MTc4MDEzMTYyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03dc6738aa99965',t:'MTc4MDE0NDQ4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03ec69e4f716e86',t:'MTc4MDE1NDk4Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a044a0206fbaf558',t:'MTc4MDIxNjMyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a047bf97ecb1b173',t:'MTc4MDI0OTA2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0cc9c0d6b7a124d',t:'MTc4MTY0MjIxNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a11758f84eade50f',t:'MTc4MjQyNTkwMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
