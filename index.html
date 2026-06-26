@@ -1828,9 +1828,23 @@ function attachSwipeDeleteHandlers(root=document){
 window.updateNativeWidget = function(gegessen, ziel) {
   try {
     if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.updateWidgetData) {
+      const log = S.dayLog;
+      const totals = sumMeals(log.meals);
+      const targets = getDynamicTargets(S.profile, log);
+      
       window.webkit.messageHandlers.updateWidgetData.postMessage({
-        gegessen: Math.round(gegessen),
-        ziel: Math.round(ziel)
+        gegessen:       Math.round(gegessen),
+        ziel:           Math.round(ziel),
+        carbsGegessen:  Math.round(totals.carbs),
+        carbsZiel:      Math.round(targets.carbs),
+        proteinGegessen: Math.round(totals.protein),
+        proteinZiel:    Math.round(targets.protein),
+        fettGegessen:   Math.round(totals.fat),
+        fettZiel:       Math.round(targets.fat),
+        wasserGegessen: Math.round(S.todayWater),
+        wasserZiel:     Math.round((S.profile && S.profile.waterGoal) || 2500),
+        schritte:       Math.round(log.steps || 0),
+        schritteZiel:   10000
       });
     }
   } catch(e) { console.warn('Widget Bridge Fehler:', e); }
