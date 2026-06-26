@@ -428,7 +428,6 @@ function ico(name,size=18,extra=''){
     utensils:'<path d="M4 3v8"/><path d="M7 3v8"/><path d="M5.5 11v10"/><path d="M14 3v18"/><path d="M14 3c3 1 5 4 5 8h-5"/>',
     plug:'<path d="M12 22v-5"/><path d="M9 8V2"/><path d="M15 8V2"/><path d="M7 8h10v4a5 5 0 0 1-10 0V8Z"/><path d="M8 16h8"/>',
     cart:'<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/>',
-    check:'<polyline points="20 6 9 17 4 12"/>',
     pipette:'<path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/>'
   };
   return `<svg class="ui-icon" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" ${extra}>${paths[name]||paths.spark}</svg>`;
@@ -645,20 +644,13 @@ async function forgotPassword() {
 
 function showLoginError(msg) {
   const el = document.getElementById('login-error');
-  if (el) {
-    el.textContent = msg;
-    el.style.display = 'block';
-    el.style.background = '';
-    el.style.borderColor = '';
-    el.style.color = '';
-  }
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
 }
 
 async function loginWithGoogle() {
   if (!fbAuth || !googleProvider) return showLoginError('Firebase nicht initialisiert.');
   const btn = document.querySelector('.login-btn-google');
   if (btn) { btn.disabled = true; btn.innerHTML = '<span style="display:inline-block;animation:spin 1s linear infinite;margin-right:6px">⏳</span> Verbinde...'; }
-  let loginSuccess = false;
   try {
     const oldUID = fbUID;
     const result = await fbAuth.signInWithPopup(googleProvider);
@@ -671,21 +663,16 @@ async function loginWithGoogle() {
       await migrateAnonymousData(oldUID, fbUID);
     }
 
-    await syncFromFirebase(fbUID);
-    loginSuccess = true;
+    syncFromFirebase(fbUID);
     if (btn) { btn.classList.add('success'); btn.innerHTML = '✓ Angemeldet!'; }
     setTimeout(() => afterLogin(), 600);
   } catch (e) {
     console.error('Google Login Error:', e);
-    if (e.code === 'auth/popup-closed-by-user') {
-      // User cancelled, no error message
-    } else if (e.code === 'auth/popup-blocked') {
-      showLoginError('Pop-up wurde blockiert. Bitte erlaube Pop-ups für diese Seite.');
-    } else {
-      showLoginError('Google-Login fehlgeschlagen: ' + e.message);
-    }
+    if (e.code === 'auth/popup-closed-by-user') return;
+    if (e.code === 'auth/popup-blocked') showLoginError('Pop-up wurde blockiert. Bitte erlaube Pop-ups für diese Seite.');
+    else showLoginError('Google-Login fehlgeschlagen: ' + e.message);
   }
-  if (!loginSuccess && btn) { btn.disabled = false; btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Mit Google anmelden`; }
+  if (btn) { btn.disabled = false; btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Mit Google anmelden`; }
 }
 
 async function handleEmailAuth() {
@@ -874,20 +861,23 @@ function applyTheme(opts){
     gold:{accent:'#EAB308',dim:'rgba(234,179,8,0.14)',glow:'rgba(234,179,8,0.24)'},
     orange:{accent:'#F59E6B',dim:'rgba(245,158,107,0.14)',glow:'rgba(245,158,107,0.24)'},
     rose:{accent:'#F47286',dim:'rgba(244,114,134,0.13)',glow:'rgba(244,114,134,0.23)'},
-    pink:{accent:'#EC4899',dim:'rgba(236,72,153,0.13)',glow:'rgba(236,72,153,0.23)'},
-    red:{accent:'#EF4444',dim:'rgba(239,68,68,0.13)',glow:'rgba(239,68,68,0.23)'},
-    cyan:{accent:'#06B6D4',dim:'rgba(6,182,212,0.13)',glow:'rgba(6,182,212,0.23)'},
+    pink:{accent:'#F47286',dim:'rgba(244,114,134,0.13)',glow:'rgba(244,114,134,0.23)'},
+    red:{accent:'#F47286',dim:'rgba(244,114,134,0.13)',glow:'rgba(244,114,134,0.23)'},
+    cyan:{accent:'#2EB8A6',dim:'rgba(46,184,166,0.13)',glow:'rgba(46,184,166,0.23)'},
     indigo:{accent:'#6366F1',dim:'rgba(99,102,241,0.13)',glow:'rgba(99,102,241,0.23)'},
     violet:{accent:'#8B5CF6',dim:'rgba(139,92,246,0.13)',glow:'rgba(139,92,246,0.23)'},
     magenta:{accent:'#D946EF',dim:'rgba(217,70,239,0.13)',glow:'rgba(217,70,239,0.23)'},
+    pink:{accent:'#EC4899',dim:'rgba(236,72,153,0.13)',glow:'rgba(236,72,153,0.23)'},
+    red:{accent:'#EF4444',dim:'rgba(239,68,68,0.13)',glow:'rgba(239,68,68,0.23)'},
     crimson:{accent:'#DC143C',dim:'rgba(220,20,60,0.13)',glow:'rgba(220,20,60,0.23)'},
     forest:{accent:'#16A34A',dim:'rgba(22,163,74,0.13)',glow:'rgba(22,163,74,0.23)'},
     sky:{accent:'#0EA5E9',dim:'rgba(14,165,233,0.13)',glow:'rgba(14,165,233,0.23)'},
+    cyan:{accent:'#06B6D4',dim:'rgba(6,182,212,0.13)',glow:'rgba(6,182,212,0.23)'},
     amber:{accent:'#F59E0B',dim:'rgba(245,158,11,0.14)',glow:'rgba(245,158,11,0.24)'},
     brown:{accent:'#92532E',dim:'rgba(146,83,46,0.13)',glow:'rgba(146,83,46,0.23)'},
     slate:{accent:'#64748B',dim:'rgba(100,116,139,0.13)',glow:'rgba(100,116,139,0.23)'}
   };
-  const accentAliases={pink:'rose',red:'rose',cyan:'teal',indigo:'purple'};
+  const accentAliases={};
   const colorKey=accentAliases[opts.accentColor]||opts.accentColor||'lime';
   let c=COLORS[colorKey];
   if(!c){
@@ -3307,7 +3297,9 @@ function switchAddTab(tab){
   if(tab!=='barcode')stopBarcodeScanner();
   currentAddTab=tab;
   document.querySelectorAll('.add-tab').forEach((b,i)=>{const tabs=['ki','fav','suche','barcode','rezepte','manuell'];b.classList.toggle('active',tabs[i]===tab);});
-  _renderAddTabContent();
+  const cont=document.getElementById('add-tab-content');
+  if(cont){_renderAddTabContent();}
+  else _renderAddTabContent();
 }
 
 function _renderAddTabContent(){
