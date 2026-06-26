@@ -3809,7 +3809,7 @@ function boot(){
   function updateNavProfile(){
   const btn=document.getElementById('nav-profile-btn');
   if(!btn)return;
-  const content=fbUser && !fbUser.isAnonymous && fbUser.photoURL 
+  const content=fbUser && !fbUser.isAnonymous && fbUser.photoURL
     ? `<img src="${fbUser.photoURL}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);margin-bottom:2px">PROFIL`
     : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>PROFIL`;
   btn.innerHTML=content;
