@@ -780,7 +780,15 @@ function store(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} if
 const S={
   profile:null,chats:[],activeChatId:null,currentDate:today(),
   get dayKey(){return 'log-'+this.currentDate;},
-  get dayLog(){return load(this.dayKey)||{meals:[],activities:[],steps:0,sleep:{hours:null}};},
+  get dayLog(){
+    let l = load(this.dayKey);
+    if (!l || typeof l !== 'object' || Array.isArray(l)) { l = {}; }
+    if (!Array.isArray(l.meals)) l.meals = [];
+    if (!Array.isArray(l.activities)) l.activities = [];
+    if (typeof l.steps !== 'number') l.steps = 0;
+    if (!l.sleep || typeof l.sleep !== 'object') l.sleep = { hours: null };
+    return l;
+  },
   saveDayLog(log){store(this.dayKey,log);},
   get geminiKey(){return load('geminiApiKey')||'';},
   setGeminiKey(k){store('geminiApiKey',k);},
