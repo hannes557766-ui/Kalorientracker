@@ -962,6 +962,9 @@ function normalizeProfile(p){
   p.dashboardWidgets={...DEFAULT_DASHBOARD_WIDGETS,...(p.dashboardWidgets||{})};
   p.dashboardWidgetOrder=normalizeDashboardWidgetOrder(p.dashboardWidgetOrder);
   if(typeof p.sleepGoal!=='number')p.sleepGoal=8;
+  if(p.pushMorning===undefined)p.pushMorning=true;
+  if(p.pushEvening===undefined)p.pushEvening=true;
+  if(p.pushWater===undefined)p.pushWater=false;
   return p;
 }
 function getDashboardWidgetPrefs(){return{...DEFAULT_DASHBOARD_WIDGETS,...(S.profile?.dashboardWidgets||{})};}
@@ -1642,6 +1645,7 @@ let profileHomeExpanded=false;
 let profileHomeSortMode=false;
 let profileConnectionsExpanded=false;
 let profileBackupExpanded=false;
+let profilePushExpanded=false;
 
 function navigate(v){
   const chatInp=document.getElementById('chat-inp');
@@ -3244,6 +3248,29 @@ function renderProfile(el){
 </div>
   </div>
 </details>
+</details>
+
+<details class="card settings-advanced" id="profile-push-details" style="margin-top:16px" ${profilePushExpanded?'open':''} ontoggle="profilePushExpanded=this.open">
+  <summary class="settings-summary">
+    <span class="icon-title">${ico('bot',18)} Benachrichtigungen</span>
+    <span class="chev">⌄</span>
+  </summary>
+  <div class="settings-advanced-body">
+    <div style="padding:16px;background:var(--card2);border-radius:18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div><div style="font-weight:700">Morgen-Erinnerung</div><div style="font-size:12px;color:var(--muted);margin-top:2px">09:00 Uhr – Vergiss nicht zu tracken</div></div>
+      <label class="toggle-switch"><input type="checkbox" id="prof-push-morning" ${p.pushMorning?'checked':''} onchange="window.savePushSettings()"><span class="slider"></span></label>
+    </div>
+    <div style="padding:16px;background:var(--card2);border-radius:18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div><div style="font-weight:700">Abend-Check</div><div style="font-size:12px;color:var(--muted);margin-top:2px">21:00 Uhr – Ziel erreicht?</div></div>
+      <label class="toggle-switch"><input type="checkbox" id="prof-push-evening" ${p.pushEvening?'checked':''} onchange="window.savePushSettings()"><span class="slider"></span></label>
+    </div>
+    <div style="padding:16px;background:var(--card2);border-radius:18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div><div style="font-weight:700">Wasser-Erinnerung</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Alle 2 Stunden (10-20 Uhr)</div></div>
+      <label class="toggle-switch"><input type="checkbox" id="prof-push-water" ${p.pushWater?'checked':''} onchange="window.savePushSettings()"><span class="slider"></span></label>
+    </div>
+  </div>
+</details>
+
 <details class="card settings-advanced" id="profile-backup-details" style="margin-top:16px" ${profileBackupExpanded?'open':''} ontoggle="profileBackupExpanded=this.open">
   <summary class="settings-summary">
     <span class="icon-title">${ico('save',18)} Datensicherung</span>
@@ -3262,6 +3289,25 @@ function renderProfile(el){
 }
 
 window.renderProfileHistoryContent=function(){const el=document.getElementById('profile-history-content');if(el)renderHistory(el);};
+
+
+window.savePushSettings = function() {
+  profilePushExpanded = true;
+  const morning = document.getElementById('prof-push-morning')?.checked ?? true;
+  const evening = document.getElementById('prof-push-evening')?.checked ?? true;
+  const water = document.getElementById('prof-push-water')?.checked ?? false;
+  
+  if (S.profile) {
+    S.profile.pushMorning = morning;
+    S.profile.pushEvening = evening;
+    S.profile.pushWater = water;
+    S.saveProfile(S.profile);
+  }
+  
+  // An Swift senden
+  if (window.updatePushSettings) window.updatePushSettings(morning, evening, water);
+  showToast('Benachrichtigungen aktualisiert');
+};
 
 window.exportData=function(){profileBackupExpanded=true;const data={};for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);data[key]=localStorage.getItem(key);}const blob=new Blob([JSON.stringify(data)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`kalorify_backup_${today()}.json`;a.click();};
 window.importData=function(input){profileBackupExpanded=true;const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{try{const data=JSON.parse(e.target.result);for(const key in data){localStorage.setItem(key,data[key]);}showToast('Daten importiert! Lade App neu...');setTimeout(()=>location.reload(),1500);}catch(err){showToast('Fehler beim Importieren.');}};reader.readAsText(file);};
@@ -3884,6 +3930,21 @@ window.didReceiveWidgetWater = function(ml) {
   if (currentView === 'dashboard') renderView('dashboard');
 };
 
+
+// ====================== PUSH NOTIFICATIONS BRIDGE ======================
+window.updatePushSettings = function(morning, evening, water) {
+  try {
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.pushSettings) {
+      window.webkit.messageHandlers.pushSettings.postMessage({
+        morning: morning,
+        evening: evening,
+        water: water
+      });
+      console.log('Push-Einstellungen an Swift gesendet:', {morning, evening, water});
+    }
+  } catch(e) { console.warn('Push Bridge Fehler:', e); }
+};
+
 function boot(){
   readShortcutImportFromURL();
 
@@ -3983,5 +4044,5 @@ window.addEventListener('load', () => {
 });
 
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03c8c7cf96a469d',t:'MTc4MDEzMTYyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03dc6738aa99965',t:'MTc4MDE0NDQ4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03ec69e4f716e86',t:'MTc4MDE1NDk4Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a044a0206fbaf558',t:'MTc4MDIxNjMyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a047bf97ecb1b173',t:'MTc4MDI0OTA2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0cc9c0d6b7a124d',t:'MTc4MTY0MjIxNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a11758f84eade50f',t:'MTc4MjQyNTkwMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a14febacb981c4d0',t:'MTc4MzAxOTExMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03c8c7cf96a469d',t:'MTc4MDEzMTYyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03dc6738aa99965',t:'MTc4MDE0NDQ4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03ec69e4f716e86',t:'MTc4MDE1NDk4Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a044a0206fbaf558',t:'MTc4MDIxNjMyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a047bf97ecb1b173',t:'MTc4MDI0OTA2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0cc9c0d6b7a124d',t:'MTc4MTY0MjIxNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a11758f84eade50f',t:'MTc4MjQyNTkwMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
