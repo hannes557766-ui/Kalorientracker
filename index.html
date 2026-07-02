@@ -1019,9 +1019,11 @@ function sumMeals(meals=[]){
 
 // ====================== AI ENGINE ======================
 function getAIProvider(){
-  const p=(S.profile&&S.profile.aiProvider)||'claude';
-  // Wenn Apple KI gewählt ist, aber nicht verfügbar (Browser), falle auf Auto zurück
-  if(p==='apple'&&!window.webkit){return 'auto';}
+  let p=(S.profile&&S.profile.aiProvider);
+  if(!p){
+    p = isAppleAIAvailable() ? 'apple' : 'claude';
+  }
+  if(p==='apple'&&!isAppleAIAvailable()){p='auto';}
   return p;
 }
 function getClaudeKey(){return load('claudeApiKey')||'';}
@@ -1340,6 +1342,16 @@ ANWEISUNGEN:
 async function coachChatWithImages(userMessage, b64Images){
   const provider=getAIProvider();
   const sysPrompt=buildCoachImagePrompt();
+  
+  // Apple KI: Sende erstes Bild (On-Device Modelle unterstützen meist 1 Bild)
+  if(provider==='apple'&&isAppleAIAvailable()){
+    try{
+      const firstImg = b64Images[0];
+      const prompt = sysPrompt + '\n\nNutzer: ' + userMessage;
+      const response = await callAppleAI(prompt, firstImg);
+      return response;
+    }catch(e){console.warn('Apple AI Image failed:',e.message);}
+  }
   const histText=(getCurrentMessages()||[]).filter(m=>m.role!=='loading').map(m=>({role:m.role,text:m.image?'[Ein Foto wurde gesendet]':(m.images&&m.images.length?'['+m.images.length+' Fotos wurden gesendet]':m.text)}));
   const tryOrder=(provider==='auto')?['claude','gemini','groq','mistral']:[provider];
   const imgs=Array.isArray(b64Images)?b64Images:[b64Images];
@@ -1429,16 +1441,12 @@ function localCoachResponse(userMessage){
 async function coachChat(userMessage){
   const provider=getAIProvider();
   const sysPrompt=buildCoachSystemPrompt();
-  if(provider==='apple'&&window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.appleAIChat){
-    try{return await window.sendAppleAIRequest(userMessage,sysPrompt);}
-    catch(e){console.warn('Apple AI failed:',e.message);}
-  }
+  if(provider==='apple'&&isAppleAIAvailable()){try{return await appleChatCall(userMessage,sysPrompt);}catch(e){console.warn('Apple AI Chat failed:',e.message);}}
   if(provider==='claude'&&getClaudeKey()){try{return await claudeChatCall(userMessage,sysPrompt);}catch(e){}}
   else if(provider==='groq'&&getGroqKey()){try{return await groqChatCall(userMessage,sysPrompt);}catch(e){}}
   else if(provider==='gemini'&&S.geminiKey){try{return await geminiChatCall(userMessage,sysPrompt);}catch(e){}}
   else if(provider==='mistral'&&getMistralKey()){try{return await mistralChatCall(userMessage,sysPrompt);}catch(e){}}
   else if(provider==='auto'){
-    if(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers.appleAIChat){try{return await window.sendAppleAIRequest(userMessage,sysPrompt);}catch(e){}}
     if(getClaudeKey()){try{return await claudeChatCall(userMessage,sysPrompt);}catch(e){}}
     if(S.geminiKey){try{return await geminiChatCall(userMessage,sysPrompt);}catch(e){}}
     if(getGroqKey()){try{return await groqChatCall(userMessage,sysPrompt);}catch(e){}}
@@ -1495,7 +1503,8 @@ async function addActivityAI(){
   const sys=`Du bist ein Sportwissenschaftler. Schätze den Kalorienverbrauch für: "${text}". Antworte NUR als JSON: {"name":"Kurzer Name","kcal":300,"carbs":40,"protein":10,"fat":5}`;
   try{
     let resp=null;
-    if(getClaudeKey()){try{resp=await callClaude([{role:'user',content:sys}],null,200);}catch(e){}}
+    if(getAIProvider()==='apple'&&isAppleAIAvailable()){try{resp=await callAppleAI(sys);}catch(e){}}
+    if(!resp&&getClaudeKey()){try{resp=await callClaude([{role:'user',content:sys}],null,200);}catch(e){}}
     if(!resp&&S.geminiKey){try{resp=await callGemini([{parts:[{text:sys}]}]);}catch(e){}}
     if(!resp&&getGroqKey()){try{resp=await callGroq([{role:'user',content:sys}]);}catch(e){}}
     if(!resp){
@@ -2506,6 +2515,7 @@ async function generateRecipeWithAI(request){
   let txt='';
   try{
     const provider=getAIProvider();
+    if(provider==='apple'&&isAppleAIAvailable()){try{return await generateRecipeWithAppleAI(request);}catch(e){console.warn('Apple AI Recipe failed:',e);}}
     if(provider==='claude'&&getClaudeKey())txt=await callClaude([{role:'user',content:prompt}],null,700);
     else if(provider==='groq'&&getGroqKey())txt=await callGroq([{role:'user',content:prompt}]);
     else if(provider==='gemini'&&S.geminiKey)txt=await callGemini([{parts:[{text:prompt}]}]);
@@ -3071,7 +3081,7 @@ const DB_SOURCES=[
   {id:'fs',label:'FatSecret',desc:''},
 ];
 const AI_PROVIDERS=[
-  {id:'apple',label:'Apple KI (On-Device)',desc:''},
+  {id:'apple',label:'🍎 Apple KI (On-Device)',desc:''},
   {id:'claude',label:'Claude (Anthropic)',desc:''},
   {id:'auto',label:'Auto (beste verfügbare)',desc:''},
   {id:'groq',label:'Groq (Llama)',desc:''},
@@ -3714,7 +3724,8 @@ async function analyzeAI(){
   if(btn){btn.disabled=true;btn.innerHTML=`<span style="display:inline-block;animation:spin 1s linear infinite;margin-right:6px">${ico('spark',16)}</span> Analysiere...`;}
   let result=null,source='';
   try{
-    if(getClaudeKey()){try{result=await analyzeWithClaude(text,b64);source='Claude';}catch(e){if(e.message!=='no_claude_key')console.warn(e.message);}}
+    if(getAIProvider()==='apple'&&isAppleAIAvailable()){try{result=await analyzeWithAppleAI(text,b64);source='Apple KI';}catch(e){console.warn(e.message);}}
+    if(!result&&getClaudeKey()){try{result=await analyzeWithClaude(text,b64);source='Claude';}catch(e){if(e.message!=='no_claude_key')console.warn(e.message);}}
     if(!result&&S.geminiKey){try{result=await analyzeWithGemini(text,b64);source='Gemini';}catch(e){console.warn(e.message);}}
     if(!result&&!b64&&getGroqKey()){try{result=await analyzeWithGroq(text);source='Groq';}catch(e){console.warn(e.message);}}
     if(!result&&text){const local=analyzeLocally(text);if(local){result=local;source='Lokal';}}
@@ -3980,46 +3991,96 @@ window.updatePushSettings = function(morning, evening, water) {
 };
 
 
-// ====================== APPLE ON-DEVICE KI BRIDGE ======================
-let _appleAIPending = {};
 
-// Sendet eine Anfrage an Swift (Foundation Models Framework)
-window.sendAppleAIRequest = function(message, systemPrompt) {
+
+
+// ====================== APPLE ON-DEVICE KI (iOS 26 Foundation Models) ======================
+// Einheitliche Bridge für Chat, Foto-Analyse, Rezept-Generierung und Nährwert-Schätzung
+let _appleAIRequests = {};
+
+// Prüft, ob Apple KI verfügbar ist (native App + iOS 26+)
+function isAppleAIAvailable(){
+  return !!(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.appleAI);
+}
+
+// Sendet eine Anfrage an Swift und gibt ein Promise zurück
+function callAppleAI(prompt, imageBase64){
   return new Promise((resolve, reject) => {
-    try {
-      const id = Date.now().toString(36) + Math.random().toString(36).slice(2);
-      _appleAIPending[id] = { resolve, reject };
-      
-      // Timeout nach 30 Sekunden
-      setTimeout(() => {
-        if (_appleAIPending[id]) {
-          _appleAIPending[id].reject(new Error('Apple KI Timeout'));
-          delete _appleAIPending[id];
-        }
-      }, 30000);
-      
-      window.webkit.messageHandlers.appleAIChat.postMessage({
-        id: id,
-        message: message,
-        systemPrompt: systemPrompt
-      });
-    } catch(e) {
-      reject(e);
+    if(!isAppleAIAvailable()){
+      reject(new Error('Apple KI nicht verfügbar (nur in nativer iOS App)'));
+      return;
     }
+    const id = 'ai_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    _appleAIRequests[id] = { resolve, reject };
+    
+    // Timeout nach 45 Sekunden
+    setTimeout(() => {
+      if(_appleAIRequests[id]){
+        _appleAIRequests[id].reject(new Error('Apple KI Timeout (45s)'));
+        delete _appleAIRequests[id];
+      }
+    }, 45000);
+    
+    window.webkit.messageHandlers.appleAI.postMessage({
+      id: id,
+      prompt: prompt,
+      image: imageBase64 || null
+    });
   });
-};
+}
 
 // Empfängt die Antwort von Swift
-window.didReceiveAIResponse = function(id, response, error) {
-  if (_appleAIPending[id]) {
-    if (error) {
-      _appleAIPending[id].reject(new Error(error));
+window.didReceiveAIResponse = function(id, response, error){
+  if(_appleAIRequests[id]){
+    if(error){
+      _appleAIRequests[id].reject(new Error(error));
     } else {
-      _appleAIPending[id].resolve(response);
+      _appleAIRequests[id].resolve(response);
     }
-    delete _appleAIPending[id];
+    delete _appleAIRequests[id];
   }
 };
+
+// Apple AI Chat Wrapper (für coachChat)
+async function appleChatCall(userMessage, systemPrompt){
+  const prompt = systemPrompt + '\n\nNutzer: ' + userMessage;
+  const response = await callAppleAI(prompt);
+  return response;
+}
+
+// Apple AI Foto-Analyse Wrapper
+async function analyzeWithAppleAI(text, b64img){
+  let prompt = 'Analysiere';
+  if(b64img) prompt += ' das Bild';
+  if(text) prompt += ' und die Beschreibung: "' + text + '"';
+  prompt += '. Schätze die Nährwerte für 1 Portion. Antworte NUR mit gültigem JSON: {"name":"Speisename","calories":0,"protein":0,"carbs":0,"fat":0}';
+  const response = await callAppleAI(prompt, b64img);
+  // JSON extrahieren
+  const clean = response.replace(/```json\n?|```/g, '').trim();
+  const match = clean.match(/\{[\s\S]*\}/);
+  if(match) return JSON.parse(match[0]);
+  throw new Error('Apple KI: Kein gültiges JSON erhalten');
+}
+
+// Apple AI Rezept-Generierung Wrapper
+async function generateRecipeWithAppleAI(request){
+  const prompt = 'Erstelle ein Rezept: "' + request + '". Antworte NUR mit JSON: {"name":"...","category":"lunch","portions":1,"calories":0,"protein":0,"carbs":0,"fat":0,"ingredients":["..."],"instructions":["..."],"tags":["High Protein"]}';
+  const response = await callAppleAI(prompt);
+  const clean = response.replace(/```json\n?|```/g, '').trim();
+  const match = clean.match(/\{[\s\S]*\}/);
+  if(match) return normalizeRecipeDraft(JSON.parse(match[0]));
+  throw new Error('Apple KI: Rezept-Parsing fehlgeschlagen');
+}
+
+// Apple AI Nährwert-Schätzung Wrapper
+async function estimateNutritionWithAppleAI(ingredients, portions){
+  const prompt = 'Schätze die GesAMTEN Nährwerte für ' + portions + ' Portion(en). Zutaten:\n' + ingredients + '\nAntworte NUR mit JSON: {"calories":0,"protein":0,"carbs":0,"fat":0}. Werte sind die SUMME.';
+  const response = await callAppleAI(prompt);
+  const clean = response.replace(/```json\n?|```/g, '').trim();
+  const match = clean.match(/\{[\s\S]*\}/);
+  if(match) return JSON.parse(match[0]);
+  throw new Error('Apple KI: Nährwert-Parsing fehlgeschlagen');
+}
 
 function boot(){
   readShortcutImportFromURL();
@@ -4120,5 +4181,5 @@ window.addEventListener('load', () => {
 });
 
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03c8c7cf96a469d',t:'MTc4MDEzMTYyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03dc6738aa99965',t:'MTc4MDE0NDQ4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03ec69e4f716e86',t:'MTc4MDE1NDk4Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a044a0206fbaf558',t:'MTc4MDIxNjMyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a047bf97ecb1b173',t:'MTc4MDI0OTA2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0cc9c0d6b7a124d',t:'MTc4MTY0MjIxNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a11758f84eade50f',t:'MTc4MjQyNTkwMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1503568bc2ce50e',t:'MTc4MzAyMjEzMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03c8c7cf96a469d',t:'MTc4MDEzMTYyOQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03dc6738aa99965',t:'MTc4MDE0NDQ4OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a03ec69e4f716e86',t:'MTc4MDE1NDk4Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a044a0206fbaf558',t:'MTc4MDIxNjMyMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a047bf97ecb1b173',t:'MTc4MDI0OTA2Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0cc9c0d6b7a124d',t:'MTc4MTY0MjIxNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a11758f84eade50f',t:'MTc4MjQyNTkwMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1505e2bdd93e50e',t:'MTc4MzAyMzgwMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
